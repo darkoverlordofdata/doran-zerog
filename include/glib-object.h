@@ -1,21 +1,53 @@
-#ifndef _GLIB_OBJECT_H_
-#define _GLIB_OBJECT_H_
-#define GType int
-#define g_enum_register_static(x,y) 0
+/* GObject - GLib Type, Object, Parameter and Signal Library
+ * Copyright (C) 1998, 1999, 2000 Tim Janik and Red Hat, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef __GLIB_GOBJECT_H__
+#define __GLIB_GOBJECT_H__
 
+#define __GLIB_GOBJECT_H_INSIDE__
+
+/* topmost include file for GObject header files */
+// #include <gobject/gbinding.h>
+#include <gobject/gboxed.h>
 #define g_boxed_type_register_static(x, y, z) g_str_hash(x)
-// static inline void g_type_init() {}
-// static inline void g_boxed() {}
-// typedef gpointer        (*GBoxedCopyFunc)       (gpointer s);
-// typedef void            (*GBoxedFreeFunc)       (gpointer s);
+#include <gobject/genums.h>
+#include <gobject/gobject.h>
+#include <gobject/gparam.h>
+// #include <gobject/gparamspecs.h>
+#include <gobject/gsignal.h>
+// #include <gobject/gsourceclosure.h>
+#include <gobject/gtype.h>
+// #include <gobject/gtypemodule.h>
+// #include <gobject/gtypeplugin.h>
+#include <gobject/gvalue.h>
+// #include <gobject/gvaluearray.h>
+// #include <gobject/gvaluetypes.h>
 
-/* empty */
-typedef struct {
-	int x;
-	const char *n;
-	const char *m;
-} GEnumValue;
+// #include <gobject/gobject-autocleanups.h>
+
+#define GType int
+
+static inline void gobject_init_ctor() __attribute__((constructor));
+static inline void gobject_init_ctor(void)
+{
+    // g_quark_init ();
+    // gobject_init ();
+}
 
 
+#undef __GLIB_GOBJECT_H_INSIDE__
 
-#endif /* _GLIB_OBJECT_H_ */
+#endif /* __GLIB_GOBJECT_H__ */

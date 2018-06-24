@@ -12,8 +12,11 @@
     Compact replacement for Vala runtime GLib
 
 
+### status: 
+This is being rewriten. The original prototype is a header only static inline library.
+The rewrite does not change the glib headers. This is only an alternate implementation.
 
-Parts of zerog are based on the original GLib. There is no GObject. 
+Based on the Gnome's GLib. 
 
 Implemented:
 
@@ -23,6 +26,7 @@ Implemented:
 * GArray
 * GNode
 * GQue
+
 
 
 ## Demos

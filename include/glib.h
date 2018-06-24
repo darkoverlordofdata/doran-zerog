@@ -40,49 +40,92 @@
 #ifndef _GLIB_H_
 #define _GLIB_H_
 
-#ifdef __cplusplus
- #define G_BEGIN_DECLS	extern "C" {
- #define G_END_DECLS	}
-#else
- #define G_BEGIN_DECLS
- #define G_END_DECLS
-#endif /* __cplusplus */
+#define __GLIB_H_INSIDE__
 
-G_BEGIN_DECLS
-
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <stdint.h>
-#include <limits.h>
-#include <assert.h>
-#include <time.h>
-#include <glib/gmacros.h>
+#include <stdio.h>
 
-#include <glibconfig.h>
-#include <glib/gversionmacros.h>
-#include <glib/gtypes.h>
-#include <glib/gatomic.h>
-static gpointer g_malloc         (gsize	 n_bytes) G_GNUC_MALLOC G_GNUC_ALLOC_SIZE(1);
-#include <glib/gquark.h>
-#include <glib/gtestutils.h>
-#include <glib/gmessages.h>
-#include <glib/gthread.h>
-#include <glib/gslice.h>
-#include <glib/gstrfuncs.h>
-#include <glib/gmem.h>
-#include <glib/gnode.h>
+#define _g_printf    printf
+#define _g_fprintf   fprintf
+#define _g_sprintf   sprintf
+#define _g_snprintf  snprintf
+
+#define _g_vprintf   vprintf
+#define _g_vfprintf  vfprintf
+#define _g_vsprintf  vsprintf
+#define _g_vsnprintf vsnprintf
+
+
+
+#include <glib/galloca.h>
 #include <glib/garray.h>
-#include <glib/glist.h>
-#include <glib/gslist.h>
-#include <glib/gstrfunc2.h>
-#include <glib/gstring.h>
+#include <glib/gasyncqueue.h>
+#include <glib/gatomic.h>
+#include <glib/gbacktrace.h>
+#include <glib/gbase64.h>
+#include <glib/gbitlock.h>
+#include <glib/gbookmarkfile.h>
+#include <glib/gbytes.h>
+#include <glib/gcharset.h>
+#include <glib/gchecksum.h>
+#include <glib/gconvert.h>
+#include <glib/gdataset.h>
+#include <glib/gdate.h>
+#include <glib/gdatetime.h>
+#include <glib/gdir.h>
+#include <glib/genviron.h>
 #include <glib/gerror.h>
+#include <glib/gfileutils.h>
+#include <glib/ggettext.h>
 #include <glib/ghash.h>
-#include <glib/gque.h>
+#include <glib/ghmac.h>
+#include <glib/ghook.h>
+#include <glib/ghostutils.h>
+#include <glib/giochannel.h>
+#include <glib/gkeyfile.h>
+#include <glib/glist.h>
+#include <glib/gmacros.h>
+#include <glib/gmain.h>
+#include <glib/gmappedfile.h>
+#include <glib/gmarkup.h>
+#include <glib/gmem.h>
+#include <glib/gmessages.h>
+#include <glib/gnode.h>
+#include <glib/goption.h>
+#include <glib/gpattern.h>
+#include <glib/gpoll.h>
+#include <glib/gprimes.h>
+#include <glib/gqsort.h>
+#include <glib/gquark.h>
+#include <glib/gqueue.h>
+#include <glib/grand.h>
+#include <glib/gregex.h>
+#include <glib/gscanner.h>
+#include <glib/gsequence.h>
+#include <glib/gshell.h>
+#include <glib/gslice.h>
+#include <glib/gslist.h>
+#include <glib/gspawn.h>
+#include <glib/gstrfuncs.h>
+#include <glib/gstring.h>
+#include <glib/gstringchunk.h>
+#include <glib/gtestutils.h>
+#include <glib/gthread.h>
+#include <glib/gthreadpool.h>
+#include <glib/gtimer.h>
+#include <glib/gtimezone.h>
+#include <glib/gtrashstack.h>
+#include <glib/gtree.h>
+#include <glib/gtypes.h>
+#include <glib/gunicode.h>
+#include <glib/gurifuncs.h>
+#include <glib/gutils.h>
+#include <glib/guuid.h>
+#include <glib/gvarianttype.h>
+#include <glib/gvariant.h>
+#include <glib/gversion.h>
+#include <glib/gversionmacros.h>
 
-G_END_DECLS
+#undef __GLIB_H_INSIDE__
 
 #endif /* _GLIB_H_ */
