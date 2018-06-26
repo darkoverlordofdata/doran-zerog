@@ -40,12 +40,12 @@
 
 #define GType int
 
-static inline void gobject_init_ctor() __attribute__((constructor));
-static inline void gobject_init_ctor(void)
-{
+// static inline void gobject_init_ctor() __attribute__((constructor));
+// static inline void gobject_init_ctor(void)
+// {
     // g_quark_init ();
     // gobject_init ();
-}
+// }
 
 
 #undef __GLIB_GOBJECT_H_INSIDE__
