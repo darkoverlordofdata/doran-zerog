@@ -20,22 +20,33 @@
 #define __GLIB_GOBJECT_H_INSIDE__
 
 /* topmost include file for GObject header files */
-#include <gobject/gbinding.h>
+// #include <gobject/gbinding.h>
 #include <gobject/gboxed.h>
+#define g_boxed_type_register_static(x, y, z) g_str_hash(x)
 #include <gobject/genums.h>
 #include <gobject/gobject.h>
 #include <gobject/gparam.h>
-#include <gobject/gparamspecs.h>
+// #include <gobject/gparamspecs.h>
 #include <gobject/gsignal.h>
-#include <gobject/gsourceclosure.h>
+// #include <gobject/gsourceclosure.h>
 #include <gobject/gtype.h>
-#include <gobject/gtypemodule.h>
-#include <gobject/gtypeplugin.h>
+// #include <gobject/gtypemodule.h>
+// #include <gobject/gtypeplugin.h>
 #include <gobject/gvalue.h>
-#include <gobject/gvaluearray.h>
-#include <gobject/gvaluetypes.h>
+// #include <gobject/gvaluearray.h>
+// #include <gobject/gvaluetypes.h>
 
-#include <gobject/gobject-autocleanups.h>
+// #include <gobject/gobject-autocleanups.h>
+
+#define GType int
+
+// static inline void gobject_init_ctor() __attribute__((constructor));
+// static inline void gobject_init_ctor(void)
+// {
+    // g_quark_init ();
+    // gobject_init ();
+// }
+
 
 #undef __GLIB_GOBJECT_H_INSIDE__
 

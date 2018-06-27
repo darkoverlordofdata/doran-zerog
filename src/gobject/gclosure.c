@@ -1426,73 +1426,73 @@ g_cclosure_marshal_generic (GClosure     *closure,
                             gpointer      invocation_hint,
                             gpointer      marshal_data)
 {
-  ffi_type *rtype;
-  void *rvalue;
-  int n_args;
-  ffi_type **atypes;
-  void **args;
-  int i;
-  ffi_cif cif;
-  GCClosure *cc = (GCClosure*) closure;
-  gint *enum_tmpval;
-  gboolean tmpval_used = FALSE;
+  // ffi_type *rtype;
+  // void *rvalue;
+  // int n_args;
+  // ffi_type **atypes;
+  // void **args;
+  // int i;
+  // ffi_cif cif;
+  // GCClosure *cc = (GCClosure*) closure;
+  // gint *enum_tmpval;
+  // gboolean tmpval_used = FALSE;
 
-  enum_tmpval = g_alloca (sizeof (gint));
-  if (return_gvalue && G_VALUE_TYPE (return_gvalue))
-    {
-      rtype = value_to_ffi_type (return_gvalue, &rvalue, enum_tmpval, &tmpval_used);
-    }
-  else
-    {
-      rtype = &ffi_type_void;
-    }
+  // enum_tmpval = g_alloca (sizeof (gint));
+  // if (return_gvalue && G_VALUE_TYPE (return_gvalue))
+  //   {
+  //     rtype = value_to_ffi_type (return_gvalue, &rvalue, enum_tmpval, &tmpval_used);
+  //   }
+  // else
+  //   {
+  //     rtype = &ffi_type_void;
+  //   }
 
-  rvalue = g_alloca (MAX (rtype->size, sizeof (ffi_arg)));
+  // rvalue = g_alloca (MAX (rtype->size, sizeof (ffi_arg)));
 
-  n_args = n_param_values + 1;
-  atypes = g_alloca (sizeof (ffi_type *) * n_args);
-  args =  g_alloca (sizeof (gpointer) * n_args);
+  // n_args = n_param_values + 1;
+  // atypes = g_alloca (sizeof (ffi_type *) * n_args);
+  // args =  g_alloca (sizeof (gpointer) * n_args);
 
-  if (tmpval_used)
-    enum_tmpval = g_alloca (sizeof (gint));
+  // if (tmpval_used)
+  //   enum_tmpval = g_alloca (sizeof (gint));
 
-  if (G_CCLOSURE_SWAP_DATA (closure))
-    {
-      atypes[n_args-1] = value_to_ffi_type (param_values + 0,
-                                            &args[n_args-1],
-                                            enum_tmpval,
-                                            &tmpval_used);
-      atypes[0] = &ffi_type_pointer;
-      args[0] = &closure->data;
-    }
-  else
-    {
-      atypes[0] = value_to_ffi_type (param_values + 0,
-                                     &args[0],
-                                     enum_tmpval,
-                                     &tmpval_used);
-      atypes[n_args-1] = &ffi_type_pointer;
-      args[n_args-1] = &closure->data;
-    }
+  // if (G_CCLOSURE_SWAP_DATA (closure))
+  //   {
+  //     atypes[n_args-1] = value_to_ffi_type (param_values + 0,
+  //                                           &args[n_args-1],
+  //                                           enum_tmpval,
+  //                                           &tmpval_used);
+  //     atypes[0] = &ffi_type_pointer;
+  //     args[0] = &closure->data;
+  //   }
+  // else
+  //   {
+  //     atypes[0] = value_to_ffi_type (param_values + 0,
+  //                                    &args[0],
+  //                                    enum_tmpval,
+  //                                    &tmpval_used);
+  //     atypes[n_args-1] = &ffi_type_pointer;
+  //     args[n_args-1] = &closure->data;
+  //   }
 
-  for (i = 1; i < n_args - 1; i++)
-    {
-      if (tmpval_used)
-        enum_tmpval = g_alloca (sizeof (gint));
+  // for (i = 1; i < n_args - 1; i++)
+  //   {
+  //     if (tmpval_used)
+  //       enum_tmpval = g_alloca (sizeof (gint));
 
-      atypes[i] = value_to_ffi_type (param_values + i,
-                                     &args[i],
-                                     enum_tmpval,
-                                     &tmpval_used);
-    }
+  //     atypes[i] = value_to_ffi_type (param_values + i,
+  //                                    &args[i],
+  //                                    enum_tmpval,
+  //                                    &tmpval_used);
+  //   }
 
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, n_args, rtype, atypes) != FFI_OK)
-    return;
+  // if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, n_args, rtype, atypes) != FFI_OK)
+  //   return;
 
-  ffi_call (&cif, marshal_data ? marshal_data : cc->callback, rvalue, args);
+  // ffi_call (&cif, marshal_data ? marshal_data : cc->callback, rvalue, args);
 
-  if (return_gvalue && G_VALUE_TYPE (return_gvalue))
-    value_from_ffi_type (return_gvalue, rvalue);
+  // if (return_gvalue && G_VALUE_TYPE (return_gvalue))
+  //   value_from_ffi_type (return_gvalue, rvalue);
 }
 
 /**
@@ -1525,109 +1525,109 @@ g_cclosure_marshal_generic_va (GClosure *closure,
 			       int       n_params,
 			       GType    *param_types)
 {
-  ffi_type *rtype;
-  void *rvalue;
-  int n_args;
-  ffi_type **atypes;
-  void **args;
-  va_arg_storage *storage;
-  int i;
-  ffi_cif cif;
-  GCClosure *cc = (GCClosure*) closure;
-  gint *enum_tmpval;
-  gboolean tmpval_used = FALSE;
-  va_list args_copy;
+  // ffi_type *rtype;
+  // void *rvalue;
+  // int n_args;
+  // ffi_type **atypes;
+  // void **args;
+  // va_arg_storage *storage;
+  // int i;
+  // ffi_cif cif;
+  // GCClosure *cc = (GCClosure*) closure;
+  // gint *enum_tmpval;
+  // gboolean tmpval_used = FALSE;
+  // va_list args_copy;
 
-  enum_tmpval = g_alloca (sizeof (gint));
-  if (return_value && G_VALUE_TYPE (return_value))
-    {
-      rtype = value_to_ffi_type (return_value, &rvalue, enum_tmpval, &tmpval_used);
-    }
-  else
-    {
-      rtype = &ffi_type_void;
-    }
+  // enum_tmpval = g_alloca (sizeof (gint));
+  // if (return_value && G_VALUE_TYPE (return_value))
+  //   {
+  //     rtype = value_to_ffi_type (return_value, &rvalue, enum_tmpval, &tmpval_used);
+  //   }
+  // else
+  //   {
+  //     rtype = &ffi_type_void;
+  //   }
 
-  rvalue = g_alloca (MAX (rtype->size, sizeof (ffi_arg)));
+  // rvalue = g_alloca (MAX (rtype->size, sizeof (ffi_arg)));
 
-  n_args = n_params + 2;
-  atypes = g_alloca (sizeof (ffi_type *) * n_args);
-  args =  g_alloca (sizeof (gpointer) * n_args);
-  storage = g_alloca (sizeof (va_arg_storage) * n_params);
+  // n_args = n_params + 2;
+  // atypes = g_alloca (sizeof (ffi_type *) * n_args);
+  // args =  g_alloca (sizeof (gpointer) * n_args);
+  // storage = g_alloca (sizeof (va_arg_storage) * n_params);
 
-  if (G_CCLOSURE_SWAP_DATA (closure))
-    {
-      atypes[n_args-1] = &ffi_type_pointer;
-      args[n_args-1] = &instance;
-      atypes[0] = &ffi_type_pointer;
-      args[0] = &closure->data;
-    }
-  else
-    {
-      atypes[0] = &ffi_type_pointer;
-      args[0] = &instance;
-      atypes[n_args-1] = &ffi_type_pointer;
-      args[n_args-1] = &closure->data;
-    }
+  // if (G_CCLOSURE_SWAP_DATA (closure))
+  //   {
+  //     atypes[n_args-1] = &ffi_type_pointer;
+  //     args[n_args-1] = &instance;
+  //     atypes[0] = &ffi_type_pointer;
+  //     args[0] = &closure->data;
+  //   }
+  // else
+  //   {
+  //     atypes[0] = &ffi_type_pointer;
+  //     args[0] = &instance;
+  //     atypes[n_args-1] = &ffi_type_pointer;
+  //     args[n_args-1] = &closure->data;
+  //   }
 
-  G_VA_COPY (args_copy, args_list);
+  // G_VA_COPY (args_copy, args_list);
 
-  /* Box non-primitive arguments */
-  for (i = 0; i < n_params; i++)
-    {
-      GType type = param_types[i]  & ~G_SIGNAL_TYPE_STATIC_SCOPE;
-      GType fundamental = G_TYPE_FUNDAMENTAL (type);
+  // /* Box non-primitive arguments */
+  // for (i = 0; i < n_params; i++)
+  //   {
+  //     GType type = param_types[i]  & ~G_SIGNAL_TYPE_STATIC_SCOPE;
+  //     GType fundamental = G_TYPE_FUNDAMENTAL (type);
 
-      atypes[i+1] = va_to_ffi_type (type,
-				    &args_copy,
-				    &storage[i]);
-      args[i+1] = &storage[i];
+  //     atypes[i+1] = va_to_ffi_type (type,
+	// 			    &args_copy,
+	// 			    &storage[i]);
+  //     args[i+1] = &storage[i];
 
-      if ((param_types[i]  & G_SIGNAL_TYPE_STATIC_SCOPE) == 0)
-	{
-	  if (fundamental == G_TYPE_STRING && storage[i]._gpointer != NULL)
-	    storage[i]._gpointer = g_strdup (storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_PARAM && storage[i]._gpointer != NULL)
-	    storage[i]._gpointer = g_param_spec_ref (storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_BOXED && storage[i]._gpointer != NULL)
-	    storage[i]._gpointer = g_boxed_copy (type, storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_VARIANT && storage[i]._gpointer != NULL)
-	    storage[i]._gpointer = g_variant_ref_sink (storage[i]._gpointer);
-	}
-      if (fundamental == G_TYPE_OBJECT && storage[i]._gpointer != NULL)
-	storage[i]._gpointer = g_object_ref (storage[i]._gpointer);
-    }
+  //     if ((param_types[i]  & G_SIGNAL_TYPE_STATIC_SCOPE) == 0)
+	// {
+	//   if (fundamental == G_TYPE_STRING && storage[i]._gpointer != NULL)
+	//     storage[i]._gpointer = g_strdup (storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_PARAM && storage[i]._gpointer != NULL)
+	//     storage[i]._gpointer = g_param_spec_ref (storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_BOXED && storage[i]._gpointer != NULL)
+	//     storage[i]._gpointer = g_boxed_copy (type, storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_VARIANT && storage[i]._gpointer != NULL)
+	//     storage[i]._gpointer = g_variant_ref_sink (storage[i]._gpointer);
+	// }
+  //     if (fundamental == G_TYPE_OBJECT && storage[i]._gpointer != NULL)
+	// storage[i]._gpointer = g_object_ref (storage[i]._gpointer);
+  //   }
 
-  va_end (args_copy);
+  // va_end (args_copy);
   
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, n_args, rtype, atypes) != FFI_OK)
-    return;
+  // if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, n_args, rtype, atypes) != FFI_OK)
+  //   return;
 
-  ffi_call (&cif, marshal_data ? marshal_data : cc->callback, rvalue, args);
+  // ffi_call (&cif, marshal_data ? marshal_data : cc->callback, rvalue, args);
 
-  /* Unbox non-primitive arguments */
-  for (i = 0; i < n_params; i++)
-    {
-      GType type = param_types[i]  & ~G_SIGNAL_TYPE_STATIC_SCOPE;
-      GType fundamental = G_TYPE_FUNDAMENTAL (type);
+  // /* Unbox non-primitive arguments */
+  // for (i = 0; i < n_params; i++)
+  //   {
+  //     GType type = param_types[i]  & ~G_SIGNAL_TYPE_STATIC_SCOPE;
+  //     GType fundamental = G_TYPE_FUNDAMENTAL (type);
 
-      if ((param_types[i]  & G_SIGNAL_TYPE_STATIC_SCOPE) == 0)
-	{
-	  if (fundamental == G_TYPE_STRING && storage[i]._gpointer != NULL)
-	    g_free (storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_PARAM && storage[i]._gpointer != NULL)
-	    g_param_spec_unref (storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_BOXED && storage[i]._gpointer != NULL)
-	    g_boxed_free (type, storage[i]._gpointer);
-	  else if (fundamental == G_TYPE_VARIANT && storage[i]._gpointer != NULL)
-	    g_variant_unref (storage[i]._gpointer);
-	}
-      if (fundamental == G_TYPE_OBJECT && storage[i]._gpointer != NULL)
-	g_object_unref (storage[i]._gpointer);
-    }
+  //     if ((param_types[i]  & G_SIGNAL_TYPE_STATIC_SCOPE) == 0)
+	// {
+	//   if (fundamental == G_TYPE_STRING && storage[i]._gpointer != NULL)
+	//     g_free (storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_PARAM && storage[i]._gpointer != NULL)
+	//     g_param_spec_unref (storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_BOXED && storage[i]._gpointer != NULL)
+	//     g_boxed_free (type, storage[i]._gpointer);
+	//   else if (fundamental == G_TYPE_VARIANT && storage[i]._gpointer != NULL)
+	//     g_variant_unref (storage[i]._gpointer);
+	// }
+  //     if (fundamental == G_TYPE_OBJECT && storage[i]._gpointer != NULL)
+	// g_object_unref (storage[i]._gpointer);
+  //   }
   
-  if (return_value && G_VALUE_TYPE (return_value))
-    value_from_ffi_type (return_value, rvalue);
+  // if (return_value && G_VALUE_TYPE (return_value))
+  //   value_from_ffi_type (return_value, rvalue);
 }
 
 /**

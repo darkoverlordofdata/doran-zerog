@@ -405,11 +405,11 @@ param_unichar_validate (GParamSpec *pspec,
   gunichar oval = value->data[0].v_uint;
   gboolean changed = FALSE;
 
-  if (!g_unichar_validate (oval))
-    {
-      value->data[0].v_uint = 0;
-      changed = TRUE;
-    }
+  // if (!g_unichar_validate (oval))
+  //   {
+  //     value->data[0].v_uint = 0;
+  //     changed = TRUE;
+  //   }
 
   return changed;
 }
@@ -1117,7 +1117,7 @@ param_variant_finalize (GParamSpec *pspec)
 
   if (vspec->default_value)
     g_variant_unref (vspec->default_value);
-  g_variant_type_free (vspec->type);
+  // g_variant_type_free (vspec->type);
 
   parent_class->finalize (pspec);
 }
@@ -1176,12 +1176,13 @@ param_variant_values_cmp (GParamSpec   *pspec,
   else if (v1 != NULL && v2 == NULL)
     return 1;
 
-  if (!g_variant_type_equal (g_variant_get_type (v1), g_variant_get_type (v2)) ||
-      variant_is_incomparable (v1) ||
-      variant_is_incomparable (v2))
-    return g_variant_equal (v1, v2) ? 0 : (v1 < v2 ? -1 : 1);
+  // if (!g_variant_type_equal (g_variant_get_type (v1), g_variant_get_type (v2)) ||
+  //     variant_is_incomparable (v1) ||
+  //     variant_is_incomparable (v2))
+  //   return g_variant_equal (v1, v2) ? 0 : (v1 < v2 ? -1 : 1);
 
-  return g_variant_compare (v1, v2);
+  // return g_variant_compare (v1, v2);
+  return 0;
 }
 
 /* --- type initialization --- */
@@ -2573,31 +2574,31 @@ g_param_spec_override (const gchar *name,
  *
  * Since: 2.26
  */
-GParamSpec*
-g_param_spec_variant (const gchar        *name,
-                      const gchar        *nick,
-                      const gchar        *blurb,
-                      const GVariantType *type,
-                      GVariant           *default_value,
-                      GParamFlags         flags)
-{
-  GParamSpecVariant *vspec;
+// GParamSpec*
+// g_param_spec_variant (const gchar        *name,
+//                       const gchar        *nick,
+//                       const gchar        *blurb,
+//                       const GVariantType *type,
+//                       GVariant           *default_value,
+//                       GParamFlags         flags)
+// {
+//   GParamSpecVariant *vspec;
 
-  g_return_val_if_fail (type != NULL, NULL);
-  g_return_val_if_fail (default_value == NULL ||
-                        g_variant_is_of_type (default_value, type), NULL);
+//   g_return_val_if_fail (type != NULL, NULL);
+//   g_return_val_if_fail (default_value == NULL ||
+//                         g_variant_is_of_type (default_value, type), NULL);
 
-  vspec = g_param_spec_internal (G_TYPE_PARAM_VARIANT,
-                                 name,
-                                 nick,
-                                 blurb,
-                                 flags);
-  if (vspec == NULL)
-    return NULL;
+//   vspec = g_param_spec_internal (G_TYPE_PARAM_VARIANT,
+//                                  name,
+//                                  nick,
+//                                  blurb,
+//                                  flags);
+//   if (vspec == NULL)
+//     return NULL;
 
-  vspec->type = g_variant_type_copy (type);
-  if (default_value)
-    vspec->default_value = g_variant_ref_sink (default_value);
+//   vspec->type = g_variant_type_copy (type);
+//   if (default_value)
+//     vspec->default_value = g_variant_ref_sink (default_value);
 
-  return G_PARAM_SPEC (vspec);
-}
+//   return G_PARAM_SPEC (vspec);
+// }

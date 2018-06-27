@@ -24,10 +24,10 @@
 #include <gobject/gvalue.h>
 #include <gobject/gvaluetypes.h>
 #ifdef G_OS_UNIX
-#include <gobject/glib-unix.h>
+// #include <glib/glib-unix.h>
 #endif
 
-G_DEFINE_BOXED_TYPE (GIOChannel, g_io_channel, g_io_channel_ref, g_io_channel_unref)
+// G_DEFINE_BOXED_TYPE (GIOChannel, g_io_channel, g_io_channel_ref, g_io_channel_unref)
 
 GType
 g_io_condition_get_type (void)
@@ -245,43 +245,43 @@ void
 g_source_set_closure (GSource  *source,
 		      GClosure *closure)
 {
-  g_return_if_fail (source != NULL);
-  g_return_if_fail (closure != NULL);
+//   g_return_if_fail (source != NULL);
+//   g_return_if_fail (closure != NULL);
 
-  if (!source->source_funcs->closure_callback &&
-#ifdef G_OS_UNIX
-      source->source_funcs != &g_unix_fd_source_funcs &&
-      source->source_funcs != &g_unix_signal_funcs &&
-#endif
-      source->source_funcs != &g_child_watch_funcs &&
-      source->source_funcs != &g_io_watch_funcs &&
-      source->source_funcs != &g_timeout_funcs &&
-      source->source_funcs != &g_idle_funcs)
-    {
-      g_critical (G_STRLOC ": closure cannot be set on GSource without GSourceFuncs::closure_callback");
-      return;
-    }
+//   if (!source->source_funcs->closure_callback &&
+// #ifdef G_OS_UNIX
+//       source->source_funcs != &g_unix_fd_source_funcs &&
+//       source->source_funcs != &g_unix_signal_funcs &&
+// #endif
+//       source->source_funcs != &g_child_watch_funcs &&
+//       source->source_funcs != &g_io_watch_funcs &&
+//       source->source_funcs != &g_timeout_funcs &&
+//       source->source_funcs != &g_idle_funcs)
+//     {
+//       g_critical (G_STRLOC ": closure cannot be set on GSource without GSourceFuncs::closure_callback");
+//       return;
+//     }
 
-  g_closure_ref (closure);
-  g_closure_sink (closure);
-  g_source_set_callback_indirect (source, closure, &closure_callback_funcs);
+//   g_closure_ref (closure);
+//   g_closure_sink (closure);
+//   g_source_set_callback_indirect (source, closure, &closure_callback_funcs);
 
-  g_closure_add_invalidate_notifier (closure, source, closure_invalidated);
+//   g_closure_add_invalidate_notifier (closure, source, closure_invalidated);
 
-  if (G_CLOSURE_NEEDS_MARSHAL (closure))
-    {
-      GClosureMarshal marshal = (GClosureMarshal)source->source_funcs->closure_marshal;
-      if (marshal)
-	g_closure_set_marshal (closure, marshal);
-      else if (source->source_funcs == &g_idle_funcs ||
-#ifdef G_OS_UNIX
-               source->source_funcs == &g_unix_signal_funcs ||
-#endif
-               source->source_funcs == &g_timeout_funcs)
-	g_closure_set_marshal (closure, source_closure_marshal_BOOLEAN__VOID);
-      else
-        g_closure_set_marshal (closure, g_cclosure_marshal_generic);
-    }
+//   if (G_CLOSURE_NEEDS_MARSHAL (closure))
+//     {
+//       GClosureMarshal marshal = (GClosureMarshal)source->source_funcs->closure_marshal;
+//       if (marshal)
+// 	g_closure_set_marshal (closure, marshal);
+//       else if (source->source_funcs == &g_idle_funcs ||
+// #ifdef G_OS_UNIX
+//                source->source_funcs == &g_unix_signal_funcs ||
+// #endif
+//                source->source_funcs == &g_timeout_funcs)
+// 	g_closure_set_marshal (closure, source_closure_marshal_BOOLEAN__VOID);
+//       else
+//         g_closure_set_marshal (closure, g_cclosure_marshal_generic);
+//     }
 }
 
 static void

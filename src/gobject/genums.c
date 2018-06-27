@@ -24,7 +24,7 @@
 #include <string.h>
 
 #include <gobject/genums.h>
-// #include <gobject/gtype-private.h>
+#include <gobject/gtype-private.h>
 #include <gobject/gvalue.h>
 #include <gobject/gvaluecollector.h>
 
@@ -189,9 +189,8 @@ value_flags_enum_lcopy_value (const GValue *value,
  *
  * Returns: The new type identifier.
  */
-GType
-g_enum_register_static (const gchar	 *name,
-			const GEnumValue *const_static_values)
+GType	g_enum_register_static	   (const gchar	      *name,
+				    const GEnumValue  *const_static_values)
 {
   GTypeInfo enum_type_info = {
     sizeof (GEnumClass), /* class_size */

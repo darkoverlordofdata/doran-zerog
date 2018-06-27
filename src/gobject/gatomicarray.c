@@ -121,7 +121,7 @@ _g_atomic_array_copy (GAtomicArray *array,
   guint8 *new, *old;
   gsize old_size, new_size;
 
-  G_LOCK (array);
+  // G_LOCK (array);
   old = g_atomic_pointer_get (&array->data);
   if (old)
     {
@@ -140,7 +140,7 @@ _g_atomic_array_copy (GAtomicArray *array,
     }
   else
     new = NULL;
-  G_UNLOCK (array);
+  // G_UNLOCK (array);
   return new;
 }
 
@@ -154,7 +154,7 @@ _g_atomic_array_update (GAtomicArray *array,
 {
   guint8 *old;
 
-  G_LOCK (array);
+  // G_LOCK (array);
   old = g_atomic_pointer_get (&array->data);
 
   g_assert (old == NULL || G_ATOMIC_ARRAY_DATA_SIZE (old) <= G_ATOMIC_ARRAY_DATA_SIZE (new_data));
@@ -162,5 +162,5 @@ _g_atomic_array_update (GAtomicArray *array,
   g_atomic_pointer_set (&array->data, new_data);
   if (old)
     freelist_free (old);
-  G_UNLOCK (array);
+  // G_UNLOCK (array);
 }

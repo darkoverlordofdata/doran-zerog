@@ -7,10 +7,11 @@ cmake_minimum_required ( VERSION 3.1 )
 project ( zerog VERSION 0.1.0 )
 
 list ( APPEND INCLUDE "${INCLUDE}; .lib/zerog/include" )
-# list ( APPEND INCLUDE "${INCLUDE}; C:/msys64/mingw64/include/glib-2.0" )
-# list ( APPEND INCLUDE "${INCLUDE}; C:/msys64/mingw64/include" )
-list ( APPEND INCLUDE "${INCLUDE}; C:/Users/darko/Documents/GitHub/glib/glib" )
 list ( APPEND INCLUDE "${INCLUDE}; C:/Users/darko/Documents/GitHub/glib/" )
+list ( APPEND INCLUDE "${INCLUDE}; C:/Users/darko/Documents/GitHub/glib/glib" )
+list ( APPEND INCLUDE "${INCLUDE}; C:/Users/darko/Documents/GitHub/glib/gobject" )
+
+list ( APPEND INCLUDE "${INCLUDE}; C:/msys64/mingw64/lib/libffi-3.2.1/include" )
 
 list ( APPEND CSOURCE .lib/zerog/src/glib/garray.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/gatomic.c )
@@ -50,13 +51,34 @@ list ( APPEND CSOURCE .lib/zerog/src/glib/zuniprop.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/guuid.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/gversion.c )
 
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gatomicarray.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gbinding.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gboxed.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gclosure.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/genums.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gobject.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gparam.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gparamspecs.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gsignal.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gsourceclosure.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gtype.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gtypemodule.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gtypeplugin.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gvalue.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gvaluearray.c )
+list ( APPEND CSOURCE .lib/zerog/src/gobject/gvaluetypes.c )
+
+
 list ( APPEND CSOURCE .lib/zerog/src/zerog.c )
 
+list ( APPEND VALA_OPTION --define=NOGOBJECT )
+list ( APPEND VALA_OPTION --vapidir=${CMAKE_SOURCE_DIR}/.lib/zerog/vapis)
 
 ## Export to the parent scope:
 
 set ( ZEROG true PARENT_SCOPE )
 set ( INCLUDES "${INCLUDES};${INCLUDE}" PARENT_SCOPE )
 set ( C_SOURCES "${C_SOURCES};${CSOURCE}" PARENT_SCOPE )
-set ( VALAC_OPTIONS "${VALAC_OPTIONS};--define=NOGOBJECT" PARENT_SCOPE )
+set ( VALAC_OPTIONS "${VALAC_OPTIONS};${VALA_OPTION}" PARENT_SCOPE )
+
 

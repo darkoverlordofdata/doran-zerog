@@ -12,24 +12,23 @@
     Compact replacement for Vala runtime GLib
 
 
+Based on the Gnome's GLib and GObject. Valauses GLib as it's runtime, but there is much of GLib that is does not use at all. This implementation uses even less.
+
+No threading, no marshalling, no notifications.
+No custom gobject constructor or properties.
+Just support for the oop syntax.
+
 ### status: 
 This is being rewriten. The original prototype is a header only static inline library.
-The rewrite does not change the glib headers. This is only an alternate implementation.
+The rewrite does not modify the glib headers, its only an alternate implementation.
 
-Based on the Gnome's GLib. 
+At this point it just sort of works. But if you declare something not supported:
 
-Implemented:
+        public Thread t2;
 
-* GList & GSList
-* GHashTable
-* GString
-* GArray
-* GNode
-* GQue
+you'll get a link error due to undefined references.
 
-
-
-## Demos
+## Demos - using prototype version
 
 ### [<del>ShmupWarz II</del> Better Than Shmup](https://darkoverlordofdata.com/zerog-shmupwarz/)
 [The old standby](https://github.com/darkoverlordofdata/zerog-shmupwarz)

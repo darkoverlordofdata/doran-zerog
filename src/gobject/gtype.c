@@ -117,6 +117,8 @@
  *   like _Wm, but also acquires recursive mutex class_init_rec_mutex
  */
 
+#define RUNNING_ON_VALGRIND 0
+
 #ifdef LOCK_DEBUG
 #define // G_READ_LOCK(rw_lock)    do { g_printerr (G_STRLOC ": readL++\n"); g_rw_lock_reader_lock (rw_lock); } while (0)
 #define // G_READ_UNLOCK(rw_lock)  do { g_printerr (G_STRLOC ": readL--\n"); g_rw_lock_reader_unlock (rw_lock); } while (0)
@@ -4193,13 +4195,13 @@ g_type_check_is_value_type (GType type)
 }
 
 gboolean
-g_type_check_value (GValue *value)
+g_type_check_value (const GValue *value)
 {
   return value && type_check_is_value_type_U (value->g_type);
 }
 
 gboolean
-g_type_check_value_holds (GValue *value,
+g_type_check_value_holds (const GValue *value,
 			  GType         type)
 {
   return value && type_check_is_value_type_U (value->g_type) && g_type_is_a (value->g_type, type);
@@ -4369,7 +4371,7 @@ gobject_init (void)
   /* Ensure GLib is initialized first, see
    * https://bugzilla.gnome.org/show_bug.cgi?id=756139
    */
-  GLIB_PRIVATE_CALL (glib_init) ();
+  // GLIB_PRIVATE_CALL (glib_init) ();
 
   // G_WRITE_LOCK (&type_rw_lock);
 
@@ -4446,7 +4448,7 @@ gobject_init (void)
 
   /* Value Transformations
    */
-  _g_value_transforms_init ();
+  // _g_value_transforms_init ();
 
   /* Signal system
    */

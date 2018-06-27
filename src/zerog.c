@@ -16,5 +16,5 @@ static void
 zerog_init_ctor()
 {
     glib_init ();
-    // gobject_init ();
+    gobject_init ();
 }

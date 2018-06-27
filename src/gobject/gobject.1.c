@@ -222,79 +222,79 @@ g_object_notify_queue_free (gpointer data)
   g_slice_free (GObjectNotifyQueue, nqueue);
 }
 
-// static GObjectNotifyQueue*
-// g_object_notify_queue_freeze (GObject  *object,
-//                               gboolean  conditional)
-// {
-//   GObjectNotifyQueue *nqueue;
+static GObjectNotifyQueue*
+g_object_notify_queue_freeze (GObject  *object,
+                              gboolean  conditional)
+{
+  GObjectNotifyQueue *nqueue;
 
-//   G_LOCK(notify_lock);
-//   nqueue = g_datalist_id_get_data (&object->qdata, quark_notify_queue);
-//   if (!nqueue)
-//     {
-//       if (conditional)
-//         {
-//           G_UNLOCK(notify_lock);
-//           return NULL;
-//         }
+  G_LOCK(notify_lock);
+  nqueue = g_datalist_id_get_data (&object->qdata, quark_notify_queue);
+  if (!nqueue)
+    {
+      if (conditional)
+        {
+          G_UNLOCK(notify_lock);
+          return NULL;
+        }
 
-//       nqueue = g_slice_new0 (GObjectNotifyQueue);
-//       g_datalist_id_set_data_full (&object->qdata, quark_notify_queue,
-//                                    nqueue, g_object_notify_queue_free);
-//     }
+      nqueue = g_slice_new0 (GObjectNotifyQueue);
+      g_datalist_id_set_data_full (&object->qdata, quark_notify_queue,
+                                   nqueue, g_object_notify_queue_free);
+    }
 
-//   if (nqueue->freeze_count >= 65535)
-//     g_critical("Free queue for %s (%p) is larger than 65535,"
-//                " called g_object_freeze_notify() too often."
-//                " Forgot to call g_object_thaw_notify() or infinite loop",
-//                G_OBJECT_TYPE_NAME (object), object);
-//   else
-//     nqueue->freeze_count++;
-//   G_UNLOCK(notify_lock);
+  if (nqueue->freeze_count >= 65535)
+    g_critical("Free queue for %s (%p) is larger than 65535,"
+               " called g_object_freeze_notify() too often."
+               " Forgot to call g_object_thaw_notify() or infinite loop",
+               G_OBJECT_TYPE_NAME (object), object);
+  else
+    nqueue->freeze_count++;
+  G_UNLOCK(notify_lock);
 
-//   return nqueue;
-// }
+  return nqueue;
+}
 
 static void
 g_object_notify_queue_thaw (GObject            *object,
                             GObjectNotifyQueue *nqueue)
 {
-  // GParamSpec *pspecs_mem[16], **pspecs, **free_me = NULL;
-  // GSList *slist;
-  // guint n_pspecs = 0;
+  GParamSpec *pspecs_mem[16], **pspecs, **free_me = NULL;
+  GSList *slist;
+  guint n_pspecs = 0;
 
-  // g_return_if_fail (nqueue->freeze_count > 0);
-  // g_return_if_fail (g_atomic_int_get(&object->ref_count) > 0);
+  g_return_if_fail (nqueue->freeze_count > 0);
+  g_return_if_fail (g_atomic_int_get(&object->ref_count) > 0);
 
-  // G_LOCK(notify_lock);
+  G_LOCK(notify_lock);
 
-  // /* Just make sure we never get into some nasty race condition */
-  // if (G_UNLIKELY(nqueue->freeze_count == 0)) {
-  //   G_UNLOCK(notify_lock);
-  //   g_warning ("%s: property-changed notification for %s(%p) is not frozen",
-  //              G_STRFUNC, G_OBJECT_TYPE_NAME (object), object);
-  //   return;
-  // }
+  /* Just make sure we never get into some nasty race condition */
+  if (G_UNLIKELY(nqueue->freeze_count == 0)) {
+    G_UNLOCK(notify_lock);
+    g_warning ("%s: property-changed notification for %s(%p) is not frozen",
+               G_STRFUNC, G_OBJECT_TYPE_NAME (object), object);
+    return;
+  }
 
-  // nqueue->freeze_count--;
-  // if (nqueue->freeze_count) {
-  //   G_UNLOCK(notify_lock);
-  //   return;
-  // }
+  nqueue->freeze_count--;
+  if (nqueue->freeze_count) {
+    G_UNLOCK(notify_lock);
+    return;
+  }
 
-  // pspecs = nqueue->n_pspecs > 16 ? free_me = g_new (GParamSpec*, nqueue->n_pspecs) : pspecs_mem;
+  pspecs = nqueue->n_pspecs > 16 ? free_me = g_new (GParamSpec*, nqueue->n_pspecs) : pspecs_mem;
 
-  // for (slist = nqueue->pspecs; slist; slist = slist->next)
-  //   {
-  //     pspecs[n_pspecs++] = slist->data;
-  //   }
-  // g_datalist_id_set_data (&object->qdata, quark_notify_queue, NULL);
+  for (slist = nqueue->pspecs; slist; slist = slist->next)
+    {
+      pspecs[n_pspecs++] = slist->data;
+    }
+  g_datalist_id_set_data (&object->qdata, quark_notify_queue, NULL);
 
-  // G_UNLOCK(notify_lock);
+  G_UNLOCK(notify_lock);
 
-  // if (n_pspecs)
-  //   G_OBJECT_GET_CLASS (object)->dispatch_properties_changed (object, n_pspecs, pspecs);
-  // g_free (free_me);
+  if (n_pspecs)
+    G_OBJECT_GET_CLASS (object)->dispatch_properties_changed (object, n_pspecs, pspecs);
+  g_free (free_me);
 }
 
 static void
@@ -302,17 +302,17 @@ g_object_notify_queue_add (GObject            *object,
                            GObjectNotifyQueue *nqueue,
                            GParamSpec         *pspec)
 {
-  // G_LOCK(notify_lock);
+  G_LOCK(notify_lock);
 
-  // g_assert (nqueue->n_pspecs < 65535);
+  g_assert (nqueue->n_pspecs < 65535);
 
-  // if (g_slist_find (nqueue->pspecs, pspec) == NULL)
-  //   {
-  //     nqueue->pspecs = g_slist_prepend (nqueue->pspecs, pspec);
-  //     nqueue->n_pspecs++;
-  //   }
+  if (g_slist_find (nqueue->pspecs, pspec) == NULL)
+    {
+      nqueue->pspecs = g_slist_prepend (nqueue->pspecs, pspec);
+      nqueue->n_pspecs++;
+    }
 
-  // G_UNLOCK(notify_lock);
+  G_UNLOCK(notify_lock);
 }
 
 #ifdef	G_ENABLE_DEBUG
@@ -443,7 +443,7 @@ g_object_base_class_finalize (GObjectClass *class)
     {
       GParamSpec *pspec = node->data;
       
-      // g_param_spec_pool_remove (pspec_pool, pspec);
+      g_param_spec_pool_remove (pspec_pool, pspec);
       PARAM_SPEC_SET_PARAM_ID (pspec, 0);
       g_param_spec_unref (pspec);
     }
@@ -986,11 +986,11 @@ g_object_interface_list_properties (gpointer      g_iface,
   return pspecs;
 }
 
-// static inline gboolean
-// object_in_construction (GObject *object)
-// {
-//   return g_datalist_id_get_data (&object->qdata, quark_in_construction) != NULL;
-// }
+static inline gboolean
+object_in_construction (GObject *object)
+{
+  return g_datalist_id_get_data (&object->qdata, quark_in_construction) != NULL;
+}
 
 static void
 g_object_init (GObject		*object,
@@ -999,25 +999,25 @@ g_object_init (GObject		*object,
   object->ref_count = 1;
   object->qdata = NULL;
 
-  // if (CLASS_HAS_PROPS (class))
-  //   {
-  //     /* freeze object's notification queue, g_object_newv() preserves pairedness */
-  //     g_object_notify_queue_freeze (object, FALSE);
-  //   }
+  if (CLASS_HAS_PROPS (class))
+    {
+      /* freeze object's notification queue, g_object_newv() preserves pairedness */
+      g_object_notify_queue_freeze (object, FALSE);
+    }
 
-  // if (CLASS_HAS_CUSTOM_CONSTRUCTOR (class))
-  //   {
-  //     /* mark object in-construction for notify_queue_thaw() and to allow construct-only properties */
-  //     g_datalist_id_set_data (&object->qdata, quark_in_construction, object);
-  //   }
+  if (CLASS_HAS_CUSTOM_CONSTRUCTOR (class))
+    {
+      /* mark object in-construction for notify_queue_thaw() and to allow construct-only properties */
+      // g_datalist_id_set_data (&object->qdata, quark_in_construction, object);
+    }
 
-  // GOBJECT_IF_DEBUG (OBJECTS,
-  //   {
-  //     G_LOCK (debug_objects);
-  //     debug_objects_count++;
-  //     g_hash_table_add (debug_objects_ht, object);
-  //     G_UNLOCK (debug_objects);
-  //   });
+  GOBJECT_IF_DEBUG (OBJECTS,
+    {
+      G_LOCK (debug_objects);
+      debug_objects_count++;
+      g_hash_table_add (debug_objects_ht, object);
+      G_UNLOCK (debug_objects);
+    });
 }
 
 static void
@@ -1052,29 +1052,29 @@ static void
 g_object_real_dispose (GObject *object)
 {
   g_signal_handlers_destroy (object);
-  // g_datalist_id_set_data (&object->qdata, quark_closure_array, NULL);
-  // g_datalist_id_set_data (&object->qdata, quark_weak_refs, NULL);
+  g_datalist_id_set_data (&object->qdata, quark_closure_array, NULL);
+  g_datalist_id_set_data (&object->qdata, quark_weak_refs, NULL);
 }
 
 static void
 g_object_finalize (GObject *object)
 {
-  // if (object_in_construction (object))
-  //   {
-  //     g_critical ("object %s %p finalized while still in-construction",
-  //                 G_OBJECT_TYPE_NAME (object), object);
-  //   }
+  if (object_in_construction (object))
+    {
+      g_critical ("object %s %p finalized while still in-construction",
+                  G_OBJECT_TYPE_NAME (object), object);
+    }
 
-  // g_datalist_clear (&object->qdata);
+  g_datalist_clear (&object->qdata);
   
-  // GOBJECT_IF_DEBUG (OBJECTS,
-  //   {
-  //     G_LOCK (debug_objects);
-  //     g_assert (g_hash_table_contains (debug_objects_ht, object));
-  //     g_hash_table_remove (debug_objects_ht, object);
-  //     debug_objects_count--;
-  //     G_UNLOCK (debug_objects);
-  //   });
+  GOBJECT_IF_DEBUG (OBJECTS,
+    {
+      G_LOCK (debug_objects);
+      g_assert (g_hash_table_contains (debug_objects_ht, object));
+      g_hash_table_remove (debug_objects_ht, object);
+      debug_objects_count--;
+      G_UNLOCK (debug_objects);
+    });
 }
 
 static void
@@ -1129,12 +1129,12 @@ g_object_freeze_notify (GObject *object)
 {
   g_return_if_fail (G_IS_OBJECT (object));
 
-  // if (g_atomic_int_get (&object->ref_count) == 0)
-  //   return;
+  if (g_atomic_int_get (&object->ref_count) == 0)
+    return;
 
-  // g_object_ref (object);
-  // g_object_notify_queue_freeze (object, FALSE);
-  // g_object_unref (object);
+  g_object_ref (object);
+  g_object_notify_queue_freeze (object, FALSE);
+  g_object_unref (object);
 }
 
 static GParamSpec *
@@ -1159,28 +1159,28 @@ static inline void
 g_object_notify_by_spec_internal (GObject    *object,
 				  GParamSpec *pspec)
 {
-  // GParamSpec *notify_pspec;
+  GParamSpec *notify_pspec;
 
-  // notify_pspec = get_notify_pspec (pspec);
+  notify_pspec = get_notify_pspec (pspec);
 
-  // if (notify_pspec != NULL)
-  //   {
-  //     GObjectNotifyQueue *nqueue;
+  if (notify_pspec != NULL)
+    {
+      GObjectNotifyQueue *nqueue;
 
-  //     /* conditional freeze: only increase freeze count if already frozen */
-  //     nqueue = g_object_notify_queue_freeze (object, TRUE);
+      /* conditional freeze: only increase freeze count if already frozen */
+      nqueue = g_object_notify_queue_freeze (object, TRUE);
 
-  //     if (nqueue != NULL)
-  //       {
-  //         /* we're frozen, so add to the queue and release our freeze */
-  //         g_object_notify_queue_add (object, nqueue, notify_pspec);
-  //         g_object_notify_queue_thaw (object, nqueue);
-  //       }
-  //     else
-  //       /* not frozen, so just dispatch the notification directly */
-  //       G_OBJECT_GET_CLASS (object)
-  //         ->dispatch_properties_changed (object, 1, &notify_pspec);
-  //   }
+      if (nqueue != NULL)
+        {
+          /* we're frozen, so add to the queue and release our freeze */
+          g_object_notify_queue_add (object, nqueue, notify_pspec);
+          g_object_notify_queue_thaw (object, nqueue);
+        }
+      else
+        /* not frozen, so just dispatch the notification directly */
+        G_OBJECT_GET_CLASS (object)
+          ->dispatch_properties_changed (object, 1, &notify_pspec);
+    }
 }
 
 /**
@@ -1309,22 +1309,22 @@ g_object_notify_by_pspec (GObject    *object,
 void
 g_object_thaw_notify (GObject *object)
 {
-  // GObjectNotifyQueue *nqueue;
+  GObjectNotifyQueue *nqueue;
   
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // if (g_atomic_int_get (&object->ref_count) == 0)
-  //   return;
+  g_return_if_fail (G_IS_OBJECT (object));
+  if (g_atomic_int_get (&object->ref_count) == 0)
+    return;
   
-  // g_object_ref (object);
+  g_object_ref (object);
 
-  // /* FIXME: Freezing is the only way to get at the notify queue.
-  //  * So we freeze once and then thaw twice.
-  //  */
-  // nqueue = g_object_notify_queue_freeze (object, FALSE);
-  // g_object_notify_queue_thaw (object, nqueue);
-  // g_object_notify_queue_thaw (object, nqueue);
+  /* FIXME: Freezing is the only way to get at the notify queue.
+   * So we freeze once and then thaw twice.
+   */
+  nqueue = g_object_notify_queue_freeze (object, FALSE);
+  g_object_notify_queue_thaw (object, nqueue);
+  g_object_notify_queue_thaw (object, nqueue);
 
-  // g_object_unref (object);
+  g_object_unref (object);
 }
 
 static void
@@ -1360,7 +1360,7 @@ consider_issuing_property_deprecation_warning (const GParamSpec *pspec)
    * Doing it this way lets us hash directly on the (interned) property
    * name pointers.
    */
-  // g_mutex_lock (&already_warned_lock);
+  g_mutex_lock (&already_warned_lock);
 
   if (already_warned_table == NULL)
     already_warned_table = g_hash_table_new (NULL, NULL);
@@ -1369,7 +1369,7 @@ consider_issuing_property_deprecation_warning (const GParamSpec *pspec)
   if (!already)
     g_hash_table_add (already_warned_table, (gpointer) pspec->name);
 
-  // g_mutex_unlock (&already_warned_lock);
+  g_mutex_unlock (&already_warned_lock);
 
   if (!already)
     g_warning ("The property %s:%s is deprecated and shouldn't be used "
@@ -1742,35 +1742,35 @@ g_object_new_with_custom_constructor (GObjectClass          *class,
    * Check if the returned object still is so marked, or if this is an
    * already-existing singleton (in which case we should not do 'constructed').
    */
-  // newly_constructed = object_in_construction (object);
-  // if (newly_constructed)
-  //   g_datalist_id_set_data (&object->qdata, quark_in_construction, NULL);
+  newly_constructed = object_in_construction (object);
+  if (newly_constructed)
+    g_datalist_id_set_data (&object->qdata, quark_in_construction, NULL);
 
-  // if (CLASS_HAS_PROPS (class))
-  //   {
-  //     /* If this object was newly_constructed then g_object_init()
-  //      * froze the queue.  We need to freeze it here in order to get
-  //      * the handle so that we can thaw it below (otherwise it will
-  //      * be frozen forever).
-  //      *
-  //      * We also want to do a freeze if we have any params to set,
-  //      * even on a non-newly_constructed object.
-  //      *
-  //      * It's possible that we have the case of non-newly created
-  //      * singleton and all of the passed-in params were construct
-  //      * properties so n_params > 0 but we will actually set no
-  //      * properties.  This is a pretty lame case to optimise, so
-  //      * just ignore it and freeze anyway.
-  //      */
-  //     if (newly_constructed || n_params)
-  //       nqueue = g_object_notify_queue_freeze (object, FALSE);
+  if (CLASS_HAS_PROPS (class))
+    {
+      /* If this object was newly_constructed then g_object_init()
+       * froze the queue.  We need to freeze it here in order to get
+       * the handle so that we can thaw it below (otherwise it will
+       * be frozen forever).
+       *
+       * We also want to do a freeze if we have any params to set,
+       * even on a non-newly_constructed object.
+       *
+       * It's possible that we have the case of non-newly created
+       * singleton and all of the passed-in params were construct
+       * properties so n_params > 0 but we will actually set no
+       * properties.  This is a pretty lame case to optimise, so
+       * just ignore it and freeze anyway.
+       */
+      if (newly_constructed || n_params)
+        nqueue = g_object_notify_queue_freeze (object, FALSE);
 
-  //     /* Remember: if it was newly_constructed then g_object_init()
-  //      * already did a freeze, so we now have two.  Release one.
-  //      */
-  //     if (newly_constructed)
-  //       g_object_notify_queue_thaw (object, nqueue);
-  //   }
+      /* Remember: if it was newly_constructed then g_object_init()
+       * already did a freeze, so we now have two.  Release one.
+       */
+      if (newly_constructed)
+        g_object_notify_queue_thaw (object, nqueue);
+    }
 
   /* run 'constructed' handler if there is a custom one */
   if (newly_constructed && CLASS_HAS_CUSTOM_CONSTRUCTED (class))
@@ -1804,63 +1804,63 @@ g_object_new_internal (GObjectClass          *class,
 
   object = (GObject *) g_type_create_instance (class->g_type_class.g_type);
 
-  // if (CLASS_HAS_PROPS (class))
-  //   {
-  //     GSList *node;
+  if (CLASS_HAS_PROPS (class))
+    {
+      GSList *node;
 
-  //     /* This will have been setup in g_object_init() */
-  //     nqueue = g_datalist_id_get_data (&object->qdata, quark_notify_queue);
-  //     g_assert (nqueue != NULL);
+      /* This will have been setup in g_object_init() */
+      nqueue = g_datalist_id_get_data (&object->qdata, quark_notify_queue);
+      g_assert (nqueue != NULL);
 
-  //     /* We will set exactly n_construct_properties construct
-  //      * properties, but they may come from either the class default
-  //      * values or the passed-in parameter list.
-  //      */
-  //     for (node = class->construct_properties; node; node = node->next)
-  //       {
-  //         const GValue *value;
-  //         GParamSpec *pspec;
-  //         gint j;
+      /* We will set exactly n_construct_properties construct
+       * properties, but they may come from either the class default
+       * values or the passed-in parameter list.
+       */
+      for (node = class->construct_properties; node; node = node->next)
+        {
+          const GValue *value;
+          GParamSpec *pspec;
+          gint j;
 
-  //         pspec = node->data;
-  //         value = NULL; /* to silence gcc... */
+          pspec = node->data;
+          value = NULL; /* to silence gcc... */
 
-  //         for (j = 0; j < n_params; j++)
-  //           if (params[j].pspec == pspec)
-  //             {
-  //               consider_issuing_property_deprecation_warning (pspec);
-  //               value = params[j].value;
-  //               break;
-  //             }
+          for (j = 0; j < n_params; j++)
+            if (params[j].pspec == pspec)
+              {
+                consider_issuing_property_deprecation_warning (pspec);
+                value = params[j].value;
+                break;
+              }
 
-  //         if (j == n_params)
-  //           value = g_param_spec_get_default_value (pspec);
+          if (j == n_params)
+            value = g_param_spec_get_default_value (pspec);
 
-  //         object_set_property (object, pspec, value, nqueue);
-  //       }
-  //   }
+          object_set_property (object, pspec, value, nqueue);
+        }
+    }
 
-  // /* run 'constructed' handler if there is a custom one */
-  // if (CLASS_HAS_CUSTOM_CONSTRUCTED (class))
-  //   class->constructed (object);
+  /* run 'constructed' handler if there is a custom one */
+  if (CLASS_HAS_CUSTOM_CONSTRUCTED (class))
+    class->constructed (object);
 
-  // if (nqueue)
-  //   {
-  //     gint i;
+  if (nqueue)
+    {
+      gint i;
 
-  //     /* Set remaining properties.  The construct properties will
-  //      * already have been taken, so set only the non-construct
-  //      * ones.
-  //      */
-  //     for (i = 0; i < n_params; i++)
-  //       if (!(params[i].pspec->flags & (G_PARAM_CONSTRUCT | G_PARAM_CONSTRUCT_ONLY)))
-  //         {
-  //           consider_issuing_property_deprecation_warning (params[i].pspec);
-  //           object_set_property (object, params[i].pspec, params[i].value, nqueue);
-  //         }
+      /* Set remaining properties.  The construct properties will
+       * already have been taken, so set only the non-construct
+       * ones.
+       */
+      for (i = 0; i < n_params; i++)
+        if (!(params[i].pspec->flags & (G_PARAM_CONSTRUCT | G_PARAM_CONSTRUCT_ONLY)))
+          {
+            consider_issuing_property_deprecation_warning (params[i].pspec);
+            object_set_property (object, params[i].pspec, params[i].value, nqueue);
+          }
 
-  //     g_object_notify_queue_thaw (object, nqueue);
-  //   }
+      g_object_notify_queue_thaw (object, nqueue);
+    }
 
   return object;
 }
@@ -2154,25 +2154,25 @@ g_object_constructor (GType                  type,
   object = (GObject*) g_type_create_instance (type);
   
   /* set construction parameters */
-  // if (n_construct_properties)
-  //   {
-  //     GObjectNotifyQueue *nqueue = g_object_notify_queue_freeze (object, FALSE);
+  if (n_construct_properties)
+    {
+      GObjectNotifyQueue *nqueue = g_object_notify_queue_freeze (object, FALSE);
       
-  //     /* set construct properties */
-  //     while (n_construct_properties--)
-	// {
-	//   GValue *value = construct_params->value;
-	//   GParamSpec *pspec = construct_params->pspec;
+      /* set construct properties */
+      while (n_construct_properties--)
+	{
+	  GValue *value = construct_params->value;
+	  GParamSpec *pspec = construct_params->pspec;
 
-	//   construct_params++;
-	//   object_set_property (object, pspec, value, nqueue);
-	// }
-  //     g_object_notify_queue_thaw (object, nqueue);
-  //     /* the notification queue is still frozen from g_object_init(), so
-  //      * we don't need to handle it here, g_object_newv() takes
-  //      * care of that
-  //      */
-  //   }
+	  construct_params++;
+	  object_set_property (object, pspec, value, nqueue);
+	}
+      g_object_notify_queue_thaw (object, nqueue);
+      /* the notification queue is still frozen from g_object_init(), so
+       * we don't need to handle it here, g_object_newv() takes
+       * care of that
+       */
+    }
 
   return object;
 }
@@ -2188,24 +2188,24 @@ g_object_set_is_valid_property (GObject         *object,
                                 GParamSpec      *pspec,
                                 const char      *property_name)
 {
-  // if (G_UNLIKELY (pspec == NULL))
-  //   {
-  //     g_warning ("%s: object class '%s' has no property named '%s'",
-  //                G_STRFUNC, G_OBJECT_TYPE_NAME (object), property_name);
-  //     return FALSE;
-  //   }
-  // if (G_UNLIKELY (!(pspec->flags & G_PARAM_WRITABLE)))
-  //   {
-  //     g_warning ("%s: property '%s' of object class '%s' is not writable",
-  //                G_STRFUNC, pspec->name, G_OBJECT_TYPE_NAME (object));
-  //     return FALSE;
-  //   }
-  // if (G_UNLIKELY (((pspec->flags & G_PARAM_CONSTRUCT_ONLY) && !object_in_construction (object))))
-  //   {
-  //     g_warning ("%s: construct property \"%s\" for object '%s' can't be set after construction",
-  //                G_STRFUNC, pspec->name, G_OBJECT_TYPE_NAME (object));
-  //     return FALSE;
-  //   }
+  if (G_UNLIKELY (pspec == NULL))
+    {
+      g_warning ("%s: object class '%s' has no property named '%s'",
+                 G_STRFUNC, G_OBJECT_TYPE_NAME (object), property_name);
+      return FALSE;
+    }
+  if (G_UNLIKELY (!(pspec->flags & G_PARAM_WRITABLE)))
+    {
+      g_warning ("%s: property '%s' of object class '%s' is not writable",
+                 G_STRFUNC, pspec->name, G_OBJECT_TYPE_NAME (object));
+      return FALSE;
+    }
+  if (G_UNLIKELY (((pspec->flags & G_PARAM_CONSTRUCT_ONLY) && !object_in_construction (object))))
+    {
+      g_warning ("%s: construct property \"%s\" for object '%s' can't be set after construction",
+                 G_STRFUNC, pspec->name, G_OBJECT_TYPE_NAME (object));
+      return FALSE;
+    }
   return TRUE;
 }
 
@@ -2229,32 +2229,32 @@ g_object_setv (GObject       *object,
                const gchar   *names[],
                const GValue   values[])
 {
-  // guint i;
-  // GObjectNotifyQueue *nqueue;
-  // GParamSpec *pspec;
-  // GType obj_type;
+  guint i;
+  GObjectNotifyQueue *nqueue;
+  GParamSpec *pspec;
+  GType obj_type;
 
-  // g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (G_IS_OBJECT (object));
 
-  // if (n_properties == 0)
-  //   return;
+  if (n_properties == 0)
+    return;
 
-  // g_object_ref (object);
-  // obj_type = G_OBJECT_TYPE (object);
-  // nqueue = g_object_notify_queue_freeze (object, FALSE);
-  // for (i = 0; i < n_properties; i++)
-  //   {
-  //     pspec = g_param_spec_pool_lookup (pspec_pool, names[i], obj_type, TRUE);
+  g_object_ref (object);
+  obj_type = G_OBJECT_TYPE (object);
+  nqueue = g_object_notify_queue_freeze (object, FALSE);
+  for (i = 0; i < n_properties; i++)
+    {
+      pspec = g_param_spec_pool_lookup (pspec_pool, names[i], obj_type, TRUE);
 
-  //     if (!g_object_set_is_valid_property (object, pspec, names[i]))
-  //       break;
+      if (!g_object_set_is_valid_property (object, pspec, names[i]))
+        break;
 
-  //     consider_issuing_property_deprecation_warning (pspec);
-  //     object_set_property (object, pspec, &values[i], nqueue);
-  //   }
+      consider_issuing_property_deprecation_warning (pspec);
+      object_set_property (object, pspec, &values[i], nqueue);
+    }
 
-  // g_object_notify_queue_thaw (object, nqueue);
-  // g_object_unref (object);
+  g_object_notify_queue_thaw (object, nqueue);
+  g_object_unref (object);
 }
 
 /**
@@ -2271,48 +2271,48 @@ g_object_set_valist (GObject	 *object,
 		     const gchar *first_property_name,
 		     va_list	  var_args)
 {
-  // GObjectNotifyQueue *nqueue;
-  // const gchar *name;
+  GObjectNotifyQueue *nqueue;
+  const gchar *name;
   
-  // g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (G_IS_OBJECT (object));
   
-  // g_object_ref (object);
-  // nqueue = g_object_notify_queue_freeze (object, FALSE);
+  g_object_ref (object);
+  nqueue = g_object_notify_queue_freeze (object, FALSE);
   
-  // name = first_property_name;
-  // while (name)
-  //   {
-  //     GValue value = G_VALUE_INIT;
-  //     GParamSpec *pspec;
-  //     gchar *error = NULL;
+  name = first_property_name;
+  while (name)
+    {
+      GValue value = G_VALUE_INIT;
+      GParamSpec *pspec;
+      gchar *error = NULL;
       
-  //     pspec = g_param_spec_pool_lookup (pspec_pool,
-	// 				name,
-	// 				G_OBJECT_TYPE (object),
-	// 				TRUE);
+      pspec = g_param_spec_pool_lookup (pspec_pool,
+					name,
+					G_OBJECT_TYPE (object),
+					TRUE);
 
-  //     if (!g_object_set_is_valid_property (object, pspec, name))
-  //       break;
+      if (!g_object_set_is_valid_property (object, pspec, name))
+        break;
 
-  //     G_VALUE_COLLECT_INIT (&value, pspec->value_type, var_args,
-	// 		    0, &error);
-  //     if (error)
-	// {
-	//   g_warning ("%s: %s", G_STRFUNC, error);
-	//   g_free (error);
-  //         g_value_unset (&value);
-	//   break;
-	// }
+      G_VALUE_COLLECT_INIT (&value, pspec->value_type, var_args,
+			    0, &error);
+      if (error)
+	{
+	  g_warning ("%s: %s", G_STRFUNC, error);
+	  g_free (error);
+          g_value_unset (&value);
+	  break;
+	}
 
-  //     consider_issuing_property_deprecation_warning (pspec);
-  //     object_set_property (object, pspec, &value, nqueue);
-  //     g_value_unset (&value);
+      consider_issuing_property_deprecation_warning (pspec);
+      object_set_property (object, pspec, &value, nqueue);
+      g_value_unset (&value);
 
-  //     name = va_arg (var_args, gchar*);
-  //   }
+      name = va_arg (var_args, gchar*);
+    }
 
-  // g_object_notify_queue_thaw (object, nqueue);
-  // g_object_unref (object);
+  g_object_notify_queue_thaw (object, nqueue);
+  g_object_unref (object);
 }
 
 static inline gboolean
@@ -2814,31 +2814,31 @@ g_object_weak_ref (GObject    *object,
 		   GWeakNotify notify,
 		   gpointer    data)
 {
-  // WeakRefStack *wstack;
-  // guint i;
+  WeakRefStack *wstack;
+  guint i;
   
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (notify != NULL);
-  // g_return_if_fail (object->ref_count >= 1);
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (notify != NULL);
+  g_return_if_fail (object->ref_count >= 1);
 
-  // G_LOCK (weak_refs_mutex);
-  // wstack = g_datalist_id_remove_no_notify (&object->qdata, quark_weak_refs);
-  // if (wstack)
-  //   {
-  //     i = wstack->n_weak_refs++;
-  //     wstack = g_realloc (wstack, sizeof (*wstack) + sizeof (wstack->weak_refs[0]) * i);
-  //   }
-  // else
-  //   {
-  //     wstack = g_renew (WeakRefStack, NULL, 1);
-  //     wstack->object = object;
-  //     wstack->n_weak_refs = 1;
-  //     i = 0;
-  //   }
-  // wstack->weak_refs[i].notify = notify;
-  // wstack->weak_refs[i].data = data;
-  // g_datalist_id_set_data_full (&object->qdata, quark_weak_refs, wstack, weak_refs_notify);
-  // G_UNLOCK (weak_refs_mutex);
+  G_LOCK (weak_refs_mutex);
+  wstack = g_datalist_id_remove_no_notify (&object->qdata, quark_weak_refs);
+  if (wstack)
+    {
+      i = wstack->n_weak_refs++;
+      wstack = g_realloc (wstack, sizeof (*wstack) + sizeof (wstack->weak_refs[0]) * i);
+    }
+  else
+    {
+      wstack = g_renew (WeakRefStack, NULL, 1);
+      wstack->object = object;
+      wstack->n_weak_refs = 1;
+      i = 0;
+    }
+  wstack->weak_refs[i].notify = notify;
+  wstack->weak_refs[i].data = data;
+  g_datalist_id_set_data_full (&object->qdata, quark_weak_refs, wstack, weak_refs_notify);
+  G_UNLOCK (weak_refs_mutex);
 }
 
 /**
@@ -2854,33 +2854,33 @@ g_object_weak_unref (GObject    *object,
 		     GWeakNotify notify,
 		     gpointer    data)
 {
-  // WeakRefStack *wstack;
-  // gboolean found_one = FALSE;
+  WeakRefStack *wstack;
+  gboolean found_one = FALSE;
 
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (notify != NULL);
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (notify != NULL);
 
-  // G_LOCK (weak_refs_mutex);
-  // wstack = g_datalist_id_get_data (&object->qdata, quark_weak_refs);
-  // if (wstack)
-  //   {
-  //     guint i;
+  G_LOCK (weak_refs_mutex);
+  wstack = g_datalist_id_get_data (&object->qdata, quark_weak_refs);
+  if (wstack)
+    {
+      guint i;
 
-  //     for (i = 0; i < wstack->n_weak_refs; i++)
-	// if (wstack->weak_refs[i].notify == notify &&
-	//     wstack->weak_refs[i].data == data)
-	//   {
-	//     found_one = TRUE;
-	//     wstack->n_weak_refs -= 1;
-	//     if (i != wstack->n_weak_refs)
-	//       wstack->weak_refs[i] = wstack->weak_refs[wstack->n_weak_refs];
+      for (i = 0; i < wstack->n_weak_refs; i++)
+	if (wstack->weak_refs[i].notify == notify &&
+	    wstack->weak_refs[i].data == data)
+	  {
+	    found_one = TRUE;
+	    wstack->n_weak_refs -= 1;
+	    if (i != wstack->n_weak_refs)
+	      wstack->weak_refs[i] = wstack->weak_refs[wstack->n_weak_refs];
 
-	//     break;
-	//   }
-  //   }
-  // G_UNLOCK (weak_refs_mutex);
-  // if (!found_one)
-  //   g_warning ("%s: couldn't find weak ref %p(%p)", G_STRFUNC, notify, data);
+	    break;
+	  }
+    }
+  G_UNLOCK (weak_refs_mutex);
+  if (!found_one)
+    g_warning ("%s: couldn't find weak ref %p(%p)", G_STRFUNC, notify, data);
 }
 
 /**
@@ -3042,18 +3042,18 @@ static void
 toggle_refs_notify (GObject *object,
 		    gboolean is_last_ref)
 {
-  // ToggleRefStack tstack, *tstackptr;
+  ToggleRefStack tstack, *tstackptr;
 
-  // G_LOCK (toggle_refs_mutex);
-  // tstackptr = g_datalist_id_get_data (&object->qdata, quark_toggle_refs);
-  // tstack = *tstackptr;
-  // G_UNLOCK (toggle_refs_mutex);
+  G_LOCK (toggle_refs_mutex);
+  tstackptr = g_datalist_id_get_data (&object->qdata, quark_toggle_refs);
+  tstack = *tstackptr;
+  G_UNLOCK (toggle_refs_mutex);
 
-  // /* Reentrancy here is not as tricky as it seems, because a toggle reference
-  //  * will only be notified when there is exactly one of them.
-  //  */
-  // g_assert (tstack.n_toggle_refs == 1);
-  // tstack.toggle_refs[0].notify (tstack.toggle_refs[0].data, tstack.object, is_last_ref);
+  /* Reentrancy here is not as tricky as it seems, because a toggle reference
+   * will only be notified when there is exactly one of them.
+   */
+  g_assert (tstack.n_toggle_refs == 1);
+  tstack.toggle_refs[0].notify (tstack.toggle_refs[0].data, tstack.object, is_last_ref);
 }
 
 /**
@@ -3100,41 +3100,41 @@ g_object_add_toggle_ref (GObject       *object,
 			 GToggleNotify  notify,
 			 gpointer       data)
 {
-  // ToggleRefStack *tstack;
-  // guint i;
+  ToggleRefStack *tstack;
+  guint i;
   
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (notify != NULL);
-  // g_return_if_fail (object->ref_count >= 1);
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (notify != NULL);
+  g_return_if_fail (object->ref_count >= 1);
 
-  // g_object_ref (object);
+  g_object_ref (object);
 
-  // G_LOCK (toggle_refs_mutex);
-  // tstack = g_datalist_id_remove_no_notify (&object->qdata, quark_toggle_refs);
-  // if (tstack)
-  //   {
-  //     i = tstack->n_toggle_refs++;
-  //     /* allocate i = tstate->n_toggle_refs - 1 positions beyond the 1 declared
-  //      * in tstate->toggle_refs */
-  //     tstack = g_realloc (tstack, sizeof (*tstack) + sizeof (tstack->toggle_refs[0]) * i);
-  //   }
-  // else
-  //   {
-  //     tstack = g_renew (ToggleRefStack, NULL, 1);
-  //     tstack->object = object;
-  //     tstack->n_toggle_refs = 1;
-  //     i = 0;
-  //   }
+  G_LOCK (toggle_refs_mutex);
+  tstack = g_datalist_id_remove_no_notify (&object->qdata, quark_toggle_refs);
+  if (tstack)
+    {
+      i = tstack->n_toggle_refs++;
+      /* allocate i = tstate->n_toggle_refs - 1 positions beyond the 1 declared
+       * in tstate->toggle_refs */
+      tstack = g_realloc (tstack, sizeof (*tstack) + sizeof (tstack->toggle_refs[0]) * i);
+    }
+  else
+    {
+      tstack = g_renew (ToggleRefStack, NULL, 1);
+      tstack->object = object;
+      tstack->n_toggle_refs = 1;
+      i = 0;
+    }
 
-  // /* Set a flag for fast lookup after adding the first toggle reference */
-  // if (tstack->n_toggle_refs == 1)
-  //   g_datalist_set_flags (&object->qdata, OBJECT_HAS_TOGGLE_REF_FLAG);
+  /* Set a flag for fast lookup after adding the first toggle reference */
+  if (tstack->n_toggle_refs == 1)
+    g_datalist_set_flags (&object->qdata, OBJECT_HAS_TOGGLE_REF_FLAG);
   
-  // tstack->toggle_refs[i].notify = notify;
-  // tstack->toggle_refs[i].data = data;
-  // g_datalist_id_set_data_full (&object->qdata, quark_toggle_refs, tstack,
-	// 		       (GDestroyNotify)g_free);
-  // G_UNLOCK (toggle_refs_mutex);
+  tstack->toggle_refs[i].notify = notify;
+  tstack->toggle_refs[i].data = data;
+  g_datalist_id_set_data_full (&object->qdata, quark_toggle_refs, tstack,
+			       (GDestroyNotify)g_free);
+  G_UNLOCK (toggle_refs_mutex);
 }
 
 /**
@@ -3155,39 +3155,39 @@ g_object_remove_toggle_ref (GObject       *object,
 			    GToggleNotify  notify,
 			    gpointer       data)
 {
-  // ToggleRefStack *tstack;
-  // gboolean found_one = FALSE;
+  ToggleRefStack *tstack;
+  gboolean found_one = FALSE;
 
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (notify != NULL);
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (notify != NULL);
 
-  // G_LOCK (toggle_refs_mutex);
-  // tstack = g_datalist_id_get_data (&object->qdata, quark_toggle_refs);
-  // if (tstack)
-  //   {
-  //     guint i;
+  G_LOCK (toggle_refs_mutex);
+  tstack = g_datalist_id_get_data (&object->qdata, quark_toggle_refs);
+  if (tstack)
+    {
+      guint i;
 
-  //     for (i = 0; i < tstack->n_toggle_refs; i++)
-	// if (tstack->toggle_refs[i].notify == notify &&
-	//     tstack->toggle_refs[i].data == data)
-	//   {
-	//     found_one = TRUE;
-	//     tstack->n_toggle_refs -= 1;
-	//     if (i != tstack->n_toggle_refs)
-	//       tstack->toggle_refs[i] = tstack->toggle_refs[tstack->n_toggle_refs];
+      for (i = 0; i < tstack->n_toggle_refs; i++)
+	if (tstack->toggle_refs[i].notify == notify &&
+	    tstack->toggle_refs[i].data == data)
+	  {
+	    found_one = TRUE;
+	    tstack->n_toggle_refs -= 1;
+	    if (i != tstack->n_toggle_refs)
+	      tstack->toggle_refs[i] = tstack->toggle_refs[tstack->n_toggle_refs];
 
-	//     if (tstack->n_toggle_refs == 0)
-	//       g_datalist_unset_flags (&object->qdata, OBJECT_HAS_TOGGLE_REF_FLAG);
+	    if (tstack->n_toggle_refs == 0)
+	      g_datalist_unset_flags (&object->qdata, OBJECT_HAS_TOGGLE_REF_FLAG);
 
-	//     break;
-	//   }
-  //   }
-  // G_UNLOCK (toggle_refs_mutex);
+	    break;
+	  }
+    }
+  G_UNLOCK (toggle_refs_mutex);
 
-  // if (found_one)
-  //   g_object_unref (object);
-  // else
-  //   g_warning ("%s: couldn't find toggle ref %p(%p)", G_STRFUNC, notify, data);
+  if (found_one)
+    g_object_unref (object);
+  else
+    g_warning ("%s: couldn't find toggle ref %p(%p)", G_STRFUNC, notify, data);
 }
 
 /**
@@ -3405,14 +3405,14 @@ g_clear_object (volatile GObject **object_ptr)
  * 
  * Returns: (transfer none) (nullable): The user data pointer set, or %NULL
  */
-// gpointer
-// g_object_get_qdata (GObject *object,
-// 		    GQuark   quark)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+gpointer
+g_object_get_qdata (GObject *object,
+		    GQuark   quark)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
   
-//   return quark ? g_datalist_id_get_data (&object->qdata, quark) : NULL;
-// }
+  return quark ? g_datalist_id_get_data (&object->qdata, quark) : NULL;
+}
 
 /**
  * g_object_set_qdata: (skip)
@@ -3429,16 +3429,16 @@ g_clear_object (volatile GObject **object_ptr)
  * the old pointer set, using #NULL as pointer essentially
  * removes the data stored.
  */
-// void
-// g_object_set_qdata (GObject *object,
-// 		    GQuark   quark,
-// 		    gpointer data)
-// {
-//   g_return_if_fail (G_IS_OBJECT (object));
-//   g_return_if_fail (quark > 0);
+void
+g_object_set_qdata (GObject *object,
+		    GQuark   quark,
+		    gpointer data)
+{
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (quark > 0);
 
-//   g_datalist_id_set_data (&object->qdata, quark, data);
-// }
+  g_datalist_id_set_data (&object->qdata, quark, data);
+}
 
 /**
  * g_object_dup_qdata: (skip)
@@ -3469,17 +3469,17 @@ g_clear_object (volatile GObject **object_ptr)
  *
  * Since: 2.34
  */
-// gpointer
-// g_object_dup_qdata (GObject        *object,
-//                     GQuark          quark,
-//                     GDuplicateFunc   dup_func,
-//                     gpointer         user_data)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-//   g_return_val_if_fail (quark > 0, NULL);
+gpointer
+g_object_dup_qdata (GObject        *object,
+                    GQuark          quark,
+                    GDuplicateFunc   dup_func,
+                    gpointer         user_data)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+  g_return_val_if_fail (quark > 0, NULL);
 
-//   return g_datalist_id_dup_data (&object->qdata, quark, dup_func, user_data);
-// }
+  return g_datalist_id_dup_data (&object->qdata, quark, dup_func, user_data);
+}
 
 /**
  * g_object_replace_qdata: (skip)
@@ -3509,21 +3509,21 @@ g_clear_object (volatile GObject **object_ptr)
  *
  * Since: 2.34
  */
-// gboolean
-// g_object_replace_qdata (GObject        *object,
-//                         GQuark          quark,
-//                         gpointer        oldval,
-//                         gpointer        newval,
-//                         GDestroyNotify  destroy,
-//                         GDestroyNotify *old_destroy)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), FALSE);
-//   g_return_val_if_fail (quark > 0, FALSE);
+gboolean
+g_object_replace_qdata (GObject        *object,
+                        GQuark          quark,
+                        gpointer        oldval,
+                        gpointer        newval,
+                        GDestroyNotify  destroy,
+                        GDestroyNotify *old_destroy)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), FALSE);
+  g_return_val_if_fail (quark > 0, FALSE);
 
-//   return g_datalist_id_replace_data (&object->qdata, quark,
-//                                      oldval, newval, destroy,
-//                                      old_destroy);
-// }
+  return g_datalist_id_replace_data (&object->qdata, quark,
+                                     oldval, newval, destroy,
+                                     old_destroy);
+}
 
 /**
  * g_object_set_qdata_full: (skip)
@@ -3545,11 +3545,11 @@ g_object_set_qdata_full (GObject       *object,
 			 gpointer	data,
 			 GDestroyNotify destroy)
 {
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (quark > 0);
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (quark > 0);
   
-  // g_datalist_id_set_data_full (&object->qdata, quark, data,
-	// 		       data ? destroy : (GDestroyNotify) NULL);
+  g_datalist_id_set_data_full (&object->qdata, quark, data,
+			       data ? destroy : (GDestroyNotify) NULL);
 }
 
 /**
@@ -3595,15 +3595,15 @@ g_object_set_qdata_full (GObject       *object,
  *
  * Returns: (transfer full) (nullable): The user data pointer set, or %NULL
  */
-// gpointer
-// g_object_steal_qdata (GObject *object,
-// 		      GQuark   quark)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-//   g_return_val_if_fail (quark > 0, NULL);
+gpointer
+g_object_steal_qdata (GObject *object,
+		      GQuark   quark)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+  g_return_val_if_fail (quark > 0, NULL);
   
-//   return g_datalist_id_remove_no_notify (&object->qdata, quark);
-// }
+  return g_datalist_id_remove_no_notify (&object->qdata, quark);
+}
 
 /**
  * g_object_get_data:
@@ -3615,15 +3615,15 @@ g_object_set_qdata_full (GObject       *object,
  * Returns: (transfer none) (nullable): the data if found,
  *          or %NULL if no such data exists.
  */
-// gpointer
-// g_object_get_data (GObject     *object,
-//                    const gchar *key)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-//   g_return_val_if_fail (key != NULL, NULL);
+gpointer
+g_object_get_data (GObject     *object,
+                   const gchar *key)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+  g_return_val_if_fail (key != NULL, NULL);
 
-//   return g_datalist_get_data (&object->qdata, key);
-// }
+  return g_datalist_get_data (&object->qdata, key);
+}
 
 /**
  * g_object_set_data:
@@ -3637,16 +3637,16 @@ g_object_set_qdata_full (GObject       *object,
  * If the object already had an association with that name,
  * the old association will be destroyed.
  */
-// void
-// g_object_set_data (GObject     *object,
-//                    const gchar *key,
-//                    gpointer     data)
-// {
-//   g_return_if_fail (G_IS_OBJECT (object));
-//   g_return_if_fail (key != NULL);
+void
+g_object_set_data (GObject     *object,
+                   const gchar *key,
+                   gpointer     data)
+{
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (key != NULL);
 
-//   g_datalist_id_set_data (&object->qdata, g_quark_from_string (key), data);
-// }
+  g_datalist_id_set_data (&object->qdata, g_quark_from_string (key), data);
+}
 
 /**
  * g_object_dup_data: (skip)
@@ -3677,19 +3677,19 @@ g_object_set_qdata_full (GObject       *object,
  *
  * Since: 2.34
  */
-// gpointer
-// g_object_dup_data (GObject        *object,
-//                    const gchar    *key,
-//                    GDuplicateFunc   dup_func,
-//                    gpointer         user_data)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-//   g_return_val_if_fail (key != NULL, NULL);
+gpointer
+g_object_dup_data (GObject        *object,
+                   const gchar    *key,
+                   GDuplicateFunc   dup_func,
+                   gpointer         user_data)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+  g_return_val_if_fail (key != NULL, NULL);
 
-//   return g_datalist_id_dup_data (&object->qdata,
-//                                  g_quark_from_string (key),
-//                                  dup_func, user_data);
-// }
+  return g_datalist_id_dup_data (&object->qdata,
+                                 g_quark_from_string (key),
+                                 dup_func, user_data);
+}
 
 /**
  * g_object_replace_data: (skip)
@@ -3719,22 +3719,22 @@ g_object_set_qdata_full (GObject       *object,
  *
  * Since: 2.34
  */
-// gboolean
-// g_object_replace_data (GObject        *object,
-//                        const gchar    *key,
-//                        gpointer        oldval,
-//                        gpointer        newval,
-//                        GDestroyNotify  destroy,
-//                        GDestroyNotify *old_destroy)
-// {
-//   g_return_val_if_fail (G_IS_OBJECT (object), FALSE);
-//   g_return_val_if_fail (key != NULL, FALSE);
+gboolean
+g_object_replace_data (GObject        *object,
+                       const gchar    *key,
+                       gpointer        oldval,
+                       gpointer        newval,
+                       GDestroyNotify  destroy,
+                       GDestroyNotify *old_destroy)
+{
+  g_return_val_if_fail (G_IS_OBJECT (object), FALSE);
+  g_return_val_if_fail (key != NULL, FALSE);
 
-//   return g_datalist_id_replace_data (&object->qdata,
-//                                      g_quark_from_string (key),
-//                                      oldval, newval, destroy,
-//                                      old_destroy);
-// }
+  return g_datalist_id_replace_data (&object->qdata,
+                                     g_quark_from_string (key),
+                                     oldval, newval, destroy,
+                                     old_destroy);
+}
 
 /**
  * g_object_set_data_full: (skip)
@@ -3749,18 +3749,18 @@ g_object_set_qdata_full (GObject       *object,
  *
  * Note that the @destroy callback is not called if @data is %NULL.
  */
-// void
-// g_object_set_data_full (GObject       *object,
-//                         const gchar   *key,
-//                         gpointer       data,
-//                         GDestroyNotify destroy)
-// {
-//   g_return_if_fail (G_IS_OBJECT (object));
-//   g_return_if_fail (key != NULL);
+void
+g_object_set_data_full (GObject       *object,
+                        const gchar   *key,
+                        gpointer       data,
+                        GDestroyNotify destroy)
+{
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (key != NULL);
 
-//   g_datalist_id_set_data_full (&object->qdata, g_quark_from_string (key), data,
-// 			       data ? destroy : (GDestroyNotify) NULL);
-// }
+  g_datalist_id_set_data_full (&object->qdata, g_quark_from_string (key), data,
+			       data ? destroy : (GDestroyNotify) NULL);
+}
 
 /**
  * g_object_steal_data:
@@ -3773,19 +3773,19 @@ g_object_set_qdata_full (GObject       *object,
  * Returns: (transfer full) (nullable): the data if found, or %NULL
  *          if no such data exists.
  */
-// gpointer
-// g_object_steal_data (GObject     *object,
-//                      const gchar *key)
-// {
-//   GQuark quark;
+gpointer
+g_object_steal_data (GObject     *object,
+                     const gchar *key)
+{
+  GQuark quark;
 
-//   g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-//   g_return_val_if_fail (key != NULL, NULL);
+  g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+  g_return_val_if_fail (key != NULL, NULL);
 
-//   quark = g_quark_try_string (key);
+  quark = g_quark_try_string (key);
 
-//   return quark ? g_datalist_id_remove_no_notify (&object->qdata, quark) : NULL;
-// }
+  return quark ? g_datalist_id_remove_no_notify (&object->qdata, quark) : NULL;
+}
 
 static void
 g_value_object_init (GValue *value)
@@ -4080,23 +4080,23 @@ static void
 object_remove_closure (gpointer  data,
 		       GClosure *closure)
 {
-  // GObject *object = data;
-  // CArray *carray;
-  // guint i;
+  GObject *object = data;
+  CArray *carray;
+  guint i;
   
-  // G_LOCK (closure_array_mutex);
-  // carray = g_object_get_qdata (object, quark_closure_array);
-  // for (i = 0; i < carray->n_closures; i++)
-  //   if (carray->closures[i] == closure)
-  //     {
-	// carray->n_closures--;
-	// if (i < carray->n_closures)
-	//   carray->closures[i] = carray->closures[carray->n_closures];
-	// G_UNLOCK (closure_array_mutex);
-	// return;
-  //     }
-  // G_UNLOCK (closure_array_mutex);
-  // g_assert_not_reached ();
+  G_LOCK (closure_array_mutex);
+  carray = g_object_get_qdata (object, quark_closure_array);
+  for (i = 0; i < carray->n_closures; i++)
+    if (carray->closures[i] == closure)
+      {
+	carray->n_closures--;
+	if (i < carray->n_closures)
+	  carray->closures[i] = carray->closures[carray->n_closures];
+	G_UNLOCK (closure_array_mutex);
+	return;
+      }
+  G_UNLOCK (closure_array_mutex);
+  g_assert_not_reached ();
 }
 
 static void
@@ -4138,36 +4138,36 @@ void
 g_object_watch_closure (GObject  *object,
 			GClosure *closure)
 {
-  // CArray *carray;
-  // guint i;
+  CArray *carray;
+  guint i;
   
-  // g_return_if_fail (G_IS_OBJECT (object));
-  // g_return_if_fail (closure != NULL);
-  // g_return_if_fail (closure->is_invalid == FALSE);
-  // g_return_if_fail (closure->in_marshal == FALSE);
-  // g_return_if_fail (object->ref_count > 0);	/* this doesn't work on finalizing objects */
+  g_return_if_fail (G_IS_OBJECT (object));
+  g_return_if_fail (closure != NULL);
+  g_return_if_fail (closure->is_invalid == FALSE);
+  g_return_if_fail (closure->in_marshal == FALSE);
+  g_return_if_fail (object->ref_count > 0);	/* this doesn't work on finalizing objects */
   
-  // g_closure_add_invalidate_notifier (closure, object, object_remove_closure);
-  // g_closure_add_marshal_guards (closure,
-	// 			object, (GClosureNotify) g_object_ref,
-	// 			object, (GClosureNotify) g_object_unref);
-  // G_LOCK (closure_array_mutex);
-  // carray = g_datalist_id_remove_no_notify (&object->qdata, quark_closure_array);
-  // if (!carray)
-  //   {
-  //     carray = g_renew (CArray, NULL, 1);
-  //     carray->object = object;
-  //     carray->n_closures = 1;
-  //     i = 0;
-  //   }
-  // else
-  //   {
-  //     i = carray->n_closures++;
-  //     carray = g_realloc (carray, sizeof (*carray) + sizeof (carray->closures[0]) * i);
-  //   }
-  // carray->closures[i] = closure;
-  // g_datalist_id_set_data_full (&object->qdata, quark_closure_array, carray, destroy_closure_array);
-  // G_UNLOCK (closure_array_mutex);
+  g_closure_add_invalidate_notifier (closure, object, object_remove_closure);
+  g_closure_add_marshal_guards (closure,
+				object, (GClosureNotify) g_object_ref,
+				object, (GClosureNotify) g_object_unref);
+  G_LOCK (closure_array_mutex);
+  carray = g_datalist_id_remove_no_notify (&object->qdata, quark_closure_array);
+  if (!carray)
+    {
+      carray = g_renew (CArray, NULL, 1);
+      carray->object = object;
+      carray->n_closures = 1;
+      i = 0;
+    }
+  else
+    {
+      i = carray->n_closures++;
+      carray = g_realloc (carray, sizeof (*carray) + sizeof (carray->closures[0]) * i);
+    }
+  carray->closures[i] = closure;
+  g_datalist_id_set_data_full (&object->qdata, quark_closure_array, carray, destroy_closure_array);
+  G_UNLOCK (closure_array_mutex);
 }
 
 /**
@@ -4384,24 +4384,24 @@ g_weak_ref_clear (GWeakRef *weak_ref)
  *
  * Since: 2.32
  */
-// gpointer
-// g_weak_ref_get (GWeakRef *weak_ref)
-// {
-//   gpointer object_or_null;
+gpointer
+g_weak_ref_get (GWeakRef *weak_ref)
+{
+  gpointer object_or_null;
 
-//   g_return_val_if_fail (weak_ref!= NULL, NULL);
+  g_return_val_if_fail (weak_ref!= NULL, NULL);
 
-//   g_rw_lock_reader_lock (&weak_locations_lock);
+  g_rw_lock_reader_lock (&weak_locations_lock);
 
-//   object_or_null = weak_ref->priv.p;
+  object_or_null = weak_ref->priv.p;
 
-//   if (object_or_null != NULL)
-//     g_object_ref (object_or_null);
+  if (object_or_null != NULL)
+    g_object_ref (object_or_null);
 
-//   g_rw_lock_reader_unlock (&weak_locations_lock);
+  g_rw_lock_reader_unlock (&weak_locations_lock);
 
-//   return object_or_null;
-// }
+  return object_or_null;
+}
 
 /**
  * g_weak_ref_set: (skip)
@@ -4420,61 +4420,61 @@ void
 g_weak_ref_set (GWeakRef *weak_ref,
                 gpointer  object)
 {
-  // GSList **weak_locations;
-  // GObject *new_object;
-  // GObject *old_object;
+  GSList **weak_locations;
+  GObject *new_object;
+  GObject *old_object;
 
-  // g_return_if_fail (weak_ref != NULL);
-  // g_return_if_fail (object == NULL || G_IS_OBJECT (object));
+  g_return_if_fail (weak_ref != NULL);
+  g_return_if_fail (object == NULL || G_IS_OBJECT (object));
 
-  // new_object = object;
+  new_object = object;
 
-  // g_rw_lock_writer_lock (&weak_locations_lock);
+  g_rw_lock_writer_lock (&weak_locations_lock);
 
-  // /* We use the extra level of indirection here so that if we have ever
-  //  * had a weak pointer installed at any point in time on this object,
-  //  * we can see that there is a non-NULL value associated with the
-  //  * weak-pointer quark and know that this value will not change at any
-  //  * point in the object's lifetime.
-  //  *
-  //  * Both properties are important for reducing the amount of times we
-  //  * need to acquire locks and for decreasing the duration of time the
-  //  * lock is held while avoiding some rather tricky races.
-  //  *
-  //  * Specifically: we can avoid having to do an extra unconditional lock
-  //  * in g_object_unref() without worrying about some extremely tricky
-  //  * races.
-  //  */
+  /* We use the extra level of indirection here so that if we have ever
+   * had a weak pointer installed at any point in time on this object,
+   * we can see that there is a non-NULL value associated with the
+   * weak-pointer quark and know that this value will not change at any
+   * point in the object's lifetime.
+   *
+   * Both properties are important for reducing the amount of times we
+   * need to acquire locks and for decreasing the duration of time the
+   * lock is held while avoiding some rather tricky races.
+   *
+   * Specifically: we can avoid having to do an extra unconditional lock
+   * in g_object_unref() without worrying about some extremely tricky
+   * races.
+   */
 
-  // old_object = weak_ref->priv.p;
-  // if (new_object != old_object)
-  //   {
-  //     weak_ref->priv.p = new_object;
+  old_object = weak_ref->priv.p;
+  if (new_object != old_object)
+    {
+      weak_ref->priv.p = new_object;
 
-  //     /* Remove the weak ref from the old object */
-  //     if (old_object != NULL)
-  //       {
-  //         weak_locations = g_datalist_id_get_data (&old_object->qdata, quark_weak_locations);
-  //         /* for it to point to an object, the object must have had it added once */
-  //         g_assert (weak_locations != NULL);
+      /* Remove the weak ref from the old object */
+      if (old_object != NULL)
+        {
+          weak_locations = g_datalist_id_get_data (&old_object->qdata, quark_weak_locations);
+          /* for it to point to an object, the object must have had it added once */
+          g_assert (weak_locations != NULL);
 
-  //         *weak_locations = g_slist_remove (*weak_locations, weak_ref);
-  //       }
+          *weak_locations = g_slist_remove (*weak_locations, weak_ref);
+        }
 
-  //     /* Add the weak ref to the new object */
-  //     if (new_object != NULL)
-  //       {
-  //         weak_locations = g_datalist_id_get_data (&new_object->qdata, quark_weak_locations);
+      /* Add the weak ref to the new object */
+      if (new_object != NULL)
+        {
+          weak_locations = g_datalist_id_get_data (&new_object->qdata, quark_weak_locations);
 
-  //         if (weak_locations == NULL)
-  //           {
-  //             weak_locations = g_new0 (GSList *, 1);
-  //             g_datalist_id_set_data_full (&new_object->qdata, quark_weak_locations, weak_locations, g_free);
-  //           }
+          if (weak_locations == NULL)
+            {
+              weak_locations = g_new0 (GSList *, 1);
+              g_datalist_id_set_data_full (&new_object->qdata, quark_weak_locations, weak_locations, g_free);
+            }
 
-  //         *weak_locations = g_slist_prepend (*weak_locations, weak_ref);
-  //       }
-  //   }
+          *weak_locations = g_slist_prepend (*weak_locations, weak_ref);
+        }
+    }
 
-  // g_rw_lock_writer_unlock (&weak_locations_lock);
+  g_rw_lock_writer_unlock (&weak_locations_lock);
 }

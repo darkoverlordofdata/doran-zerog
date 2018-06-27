@@ -25,7 +25,7 @@
 
 #include <gobject/gvalue.h>
 #include <gobject/gvaluecollector.h>
-#include <gobject/gbsearcharray.h>
+#include <glib/gbsearcharray.h>
 #include <gobject/gtype-private.h>
 
 

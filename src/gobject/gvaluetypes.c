@@ -372,9 +372,9 @@ static void
 value_copy_variant (const GValue *src_value,
 		   GValue	*dest_value)
 {
-  if (src_value->data[0].v_pointer)
-    dest_value->data[0].v_pointer = g_variant_ref_sink (src_value->data[0].v_pointer);
-  else
+  // if (src_value->data[0].v_pointer)
+  //   dest_value->data[0].v_pointer = g_variant_ref_sink (src_value->data[0].v_pointer);
+  // else
     dest_value->data[0].v_pointer = NULL;
 }
 
@@ -384,15 +384,15 @@ value_collect_variant (GValue	  *value,
 		      GTypeCValue *collect_values,
 		      guint        collect_flags)
 {
-  if (!collect_values[0].v_pointer)
-    value->data[0].v_pointer = NULL;
-  else if (collect_flags & G_VALUE_NOCOPY_CONTENTS)
-    {
-      value->data[0].v_pointer = collect_values[0].v_pointer;
-      value->data[1].v_uint = G_VALUE_NOCOPY_CONTENTS;
-    }
-  else
-    value->data[0].v_pointer = g_variant_ref_sink (collect_values[0].v_pointer);
+  // if (!collect_values[0].v_pointer)
+  //   value->data[0].v_pointer = NULL;
+  // else if (collect_flags & G_VALUE_NOCOPY_CONTENTS)
+  //   {
+  //     value->data[0].v_pointer = collect_values[0].v_pointer;
+  //     value->data[1].v_uint = G_VALUE_NOCOPY_CONTENTS;
+  //   }
+  // else
+  //   value->data[0].v_pointer = g_variant_ref_sink (collect_values[0].v_pointer);
 
   return NULL;
 }
@@ -412,8 +412,8 @@ value_lcopy_variant (const GValue *value,
     *variant_p = NULL;
   else if (collect_flags & G_VALUE_NOCOPY_CONTENTS)
     *variant_p = value->data[0].v_pointer;
-  else
-    *variant_p = g_variant_ref_sink (value->data[0].v_pointer);
+  // else
+  //   *variant_p = g_variant_ref_sink (value->data[0].v_pointer);
 
   return NULL;
 }
@@ -1227,9 +1227,9 @@ g_value_set_variant (GValue   *value,
 
   old_variant = value->data[0].v_pointer;
 
-  if (variant)
-    value->data[0].v_pointer = g_variant_ref_sink (variant);
-  else
+  // if (variant)
+  //   value->data[0].v_pointer = g_variant_ref_sink (variant);
+  // else
     value->data[0].v_pointer = NULL;
 
   if (old_variant)
@@ -1266,9 +1266,9 @@ g_value_take_variant (GValue   *value,
 
   old_variant = value->data[0].v_pointer;
 
-  if (variant)
-    value->data[0].v_pointer = g_variant_take_ref (variant);
-  else
+  // if (variant)
+  //   value->data[0].v_pointer = g_variant_take_ref (variant);
+  // else
     value->data[0].v_pointer = NULL;
 
   if (old_variant)
@@ -1313,8 +1313,8 @@ g_value_dup_variant (const GValue *value)
   g_return_val_if_fail (G_VALUE_HOLDS_VARIANT (value), NULL);
 
   variant = value->data[0].v_pointer;
-  if (variant)
-    g_variant_ref_sink (variant);
+  // if (variant)
+  //   g_variant_ref_sink (variant);
 
   return variant;
 }

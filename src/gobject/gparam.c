@@ -174,7 +174,7 @@ g_param_spec_init (GParamSpec      *pspec,
   pspec->value_type = class->value_type;
   pspec->owner_type = 0;
   pspec->qdata = NULL;
-  g_datalist_set_flags (&pspec->qdata, PARAM_FLOATING_FLAG);
+  // g_datalist_set_flags (&pspec->qdata, PARAM_FLOATING_FLAG);
   pspec->ref_count = 1;
   pspec->param_id = 0;
 }
@@ -187,7 +187,7 @@ g_param_spec_finalize (GParamSpec *pspec)
   if (priv->default_value.g_type)
     g_value_reset (&priv->default_value);
 
-  g_datalist_clear (&pspec->qdata);
+  // g_datalist_clear (&pspec->qdata);
 
   if (!(pspec->flags & G_PARAM_STATIC_NICK))
     g_free (pspec->_nick);
@@ -483,14 +483,14 @@ g_param_spec_internal (GType        param_type,
  *
  * Returns: (transfer none): the user data pointer set, or %NULL
  */
-gpointer
-g_param_spec_get_qdata (GParamSpec *pspec,
-			GQuark      quark)
-{
-  g_return_val_if_fail (G_IS_PARAM_SPEC (pspec), NULL);
+// gpointer
+// g_param_spec_get_qdata (GParamSpec *pspec,
+// 			GQuark      quark)
+// {
+//   g_return_val_if_fail (G_IS_PARAM_SPEC (pspec), NULL);
   
-  return quark ? g_datalist_id_get_data (&pspec->qdata, quark) : NULL;
-}
+//   return quark ? g_datalist_id_get_data (&pspec->qdata, quark) : NULL;
+// }
 
 /**
  * g_param_spec_set_qdata:
@@ -513,7 +513,7 @@ g_param_spec_set_qdata (GParamSpec *pspec,
   g_return_if_fail (G_IS_PARAM_SPEC (pspec));
   g_return_if_fail (quark > 0);
 
-  g_datalist_id_set_data (&pspec->qdata, quark, data);
+  // g_datalist_id_set_data (&pspec->qdata, quark, data);
 }
 
 /**
@@ -539,7 +539,7 @@ g_param_spec_set_qdata_full (GParamSpec    *pspec,
   g_return_if_fail (G_IS_PARAM_SPEC (pspec));
   g_return_if_fail (quark > 0);
 
-  g_datalist_id_set_data_full (&pspec->qdata, quark, data, data ? destroy : (GDestroyNotify) NULL);
+  // g_datalist_id_set_data_full (&pspec->qdata, quark, data, data ? destroy : (GDestroyNotify) NULL);
 }
 
 /**
@@ -561,7 +561,7 @@ g_param_spec_steal_qdata (GParamSpec *pspec,
   g_return_val_if_fail (G_IS_PARAM_SPEC (pspec), NULL);
   g_return_val_if_fail (quark > 0, NULL);
   
-  return g_datalist_id_remove_no_notify (&pspec->qdata, quark);
+  // return g_datalist_id_remove_no_notify (&pspec->qdata, quark);
 }
 
 /**
@@ -945,11 +945,11 @@ g_param_spec_pool_insert (GParamSpecPool *pool,
 	      return;
 	    }
 	}
-      g_mutex_lock (&pool->mutex);
+      // g_mutex_lock (&pool->mutex);
       pspec->owner_type = owner_type;
       g_param_spec_ref (pspec);
       g_hash_table_add (pool->hash_table, pspec);
-      g_mutex_unlock (&pool->mutex);
+      // g_mutex_unlock (&pool->mutex);
     }
   else
     {
@@ -967,25 +967,25 @@ g_param_spec_pool_insert (GParamSpecPool *pool,
  *
  * Removes a #GParamSpec from the pool.
  */
-void
-g_param_spec_pool_remove (GParamSpecPool *pool,
-			  GParamSpec     *pspec)
-{
-  if (pool && pspec)
-    {
-      g_mutex_lock (&pool->mutex);
-      if (g_hash_table_remove (pool->hash_table, pspec))
-	g_param_spec_unref (pspec);
-      else
-	g_warning (G_STRLOC ": attempt to remove unknown pspec '%s' from pool", pspec->name);
-      g_mutex_unlock (&pool->mutex);
-    }
-  else
-    {
-      g_return_if_fail (pool != NULL);
-      g_return_if_fail (pspec);
-    }
-}
+// void
+// g_param_spec_pool_remove (GParamSpecPool *pool,
+// 			  GParamSpec     *pspec)
+// {
+//   if (pool && pspec)
+//     {
+//       // g_mutex_lock (&pool->mutex);
+//       if (g_hash_table_remove (pool->hash_table, pspec))
+// 	g_param_spec_unref (pspec);
+//       else
+// 	g_warning (G_STRLOC ": attempt to remove unknown pspec '%s' from pool", pspec->name);
+//       // g_mutex_unlock (&pool->mutex);
+//     }
+//   else
+//     {
+//       g_return_if_fail (pool != NULL);
+//       g_return_if_fail (pspec);
+//     }
+// }
 
 static inline GParamSpec*
 param_spec_ht_lookup (GHashTable  *hash_table,
@@ -1066,7 +1066,7 @@ g_param_spec_pool_lookup (GParamSpecPool *pool,
   g_return_val_if_fail (pool != NULL, NULL);
   g_return_val_if_fail (param_name != NULL, NULL);
 
-  g_mutex_lock (&pool->mutex);
+  // g_mutex_lock (&pool->mutex);
 
   delim = pool->type_prefixing ? strchr (param_name, ':') : NULL;
 
@@ -1074,7 +1074,7 @@ g_param_spec_pool_lookup (GParamSpecPool *pool,
   if (!delim)
     {
       pspec = param_spec_ht_lookup (pool->hash_table, param_name, owner_type, walk_ancestors);
-      g_mutex_unlock (&pool->mutex);
+      // g_mutex_unlock (&pool->mutex);
 
       return pspec;
     }
@@ -1096,21 +1096,21 @@ g_param_spec_pool_lookup (GParamSpecPool *pool,
 	  /* sanity check, these cases don't make a whole lot of sense */
 	  if ((!walk_ancestors && type != owner_type) || !g_type_is_a (owner_type, type))
 	    {
-	      g_mutex_unlock (&pool->mutex);
+	      // g_mutex_unlock (&pool->mutex);
 
 	      return NULL;
 	    }
 	  owner_type = type;
 	  param_name += l + 2;
 	  pspec = param_spec_ht_lookup (pool->hash_table, param_name, owner_type, walk_ancestors);
-	  g_mutex_unlock (&pool->mutex);
+	  // g_mutex_unlock (&pool->mutex);
 
 	  return pspec;
 	}
     }
   /* malformed param_name */
 
-  g_mutex_unlock (&pool->mutex);
+  // g_mutex_unlock (&pool->mutex);
 
   return NULL;
 }
@@ -1149,11 +1149,11 @@ g_param_spec_pool_list_owned (GParamSpecPool *pool,
   g_return_val_if_fail (pool != NULL, NULL);
   g_return_val_if_fail (owner_type > 0, NULL);
   
-  g_mutex_lock (&pool->mutex);
+  // g_mutex_lock (&pool->mutex);
   data[0] = NULL;
   data[1] = (gpointer) owner_type;
   g_hash_table_foreach (pool->hash_table, pool_list, &data);
-  g_mutex_unlock (&pool->mutex);
+  // g_mutex_unlock (&pool->mutex);
 
   return data[0];
 }
@@ -1296,7 +1296,7 @@ g_param_spec_pool_list (GParamSpecPool *pool,
   g_return_val_if_fail (owner_type > 0, NULL);
   g_return_val_if_fail (n_pspecs_p != NULL, NULL);
   
-  g_mutex_lock (&pool->mutex);
+  // g_mutex_lock (&pool->mutex);
   *n_pspecs_p = 0;
   d = g_type_depth (owner_type);
   slists = g_new0 (GSList*, d);
@@ -1322,7 +1322,7 @@ g_param_spec_pool_list (GParamSpecPool *pool,
     }
   *p++ = NULL;
   g_free (slists);
-  g_mutex_unlock (&pool->mutex);
+  // g_mutex_unlock (&pool->mutex);
 
   return pspecs;
 }
