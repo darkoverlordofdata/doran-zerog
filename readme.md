@@ -14,25 +14,22 @@
 
 Based on the Gnome's GLib and GObject. Valauses GLib as it's runtime, but there is much of GLib that is does not use at all. This implementation uses even less.
 
+Just support for the oop syntax. Currently being co-developed with  https://github.com/darkoverlordofdata/doran-xna.framework
+
+
 No threading, no marshalling, no notifications.
 No custom gobject constructor or properties.
 No Variant data type, nothing that relies on Variant, such as 
         
         GLib.Object(Mode: 420);
         
-Just support for the oop syntax.
-
-### status: 
-This is being rewriten. The original prototype is a header only static inline library.
-The rewrite does not modify the glib headers, its only an alternate implementation.
-
-At this point it just sort of works. But if you declare something not supported:
+If you declare something not supported:
 
         public Thread t2;
 
 you'll get a link error due to undefined references.
 
-## Demos - using prototype version
+## Old Demos - using prototype version (Compact ZeroG)
 
 ### [<del>ShmupWarz II</del> Better Than Shmup](https://darkoverlordofdata.com/zerog-shmupwarz/)
 [The old standby](https://github.com/darkoverlordofdata/zerog-shmupwarz)

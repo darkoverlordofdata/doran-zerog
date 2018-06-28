@@ -2325,57 +2325,57 @@ g_strchomp (gchar *string)
  * Returns: a newly-allocated %NULL-terminated array of strings. Use
  *    g_strfreev() to free it.
  */
-// gchar**
-// g_strsplit (const gchar *string,
-//             const gchar *delimiter,
-//             gint         max_tokens)
-// {
-//   GSList *string_list = NULL, *slist;
-//   gchar **str_array, *s;
-//   guint n = 0;
-//   const gchar *remainder;
+gchar**
+g_strsplit (const gchar *string,
+            const gchar *delimiter,
+            gint         max_tokens)
+{
+  GSList *string_list = NULL, *slist;
+  gchar **str_array, *s;
+  guint n = 0;
+  const gchar *remainder;
 
-//   g_return_val_if_fail (string != NULL, NULL);
-//   g_return_val_if_fail (delimiter != NULL, NULL);
-//   g_return_val_if_fail (delimiter[0] != '\0', NULL);
+  g_return_val_if_fail (string != NULL, NULL);
+  g_return_val_if_fail (delimiter != NULL, NULL);
+  g_return_val_if_fail (delimiter[0] != '\0', NULL);
 
-//   if (max_tokens < 1)
-//     max_tokens = G_MAXINT;
+  if (max_tokens < 1)
+    max_tokens = G_MAXINT;
 
-//   remainder = string;
-//   s = strstr (remainder, delimiter);
-//   if (s)
-//     {
-//       gsize delimiter_len = strlen (delimiter);
+  remainder = string;
+  s = strstr (remainder, delimiter);
+  if (s)
+    {
+      gsize delimiter_len = strlen (delimiter);
 
-//       while (--max_tokens && s)
-//         {
-//           gsize len;
+      while (--max_tokens && s)
+        {
+          gsize len;
 
-//           len = s - remainder;
-//           string_list = g_slist_prepend (string_list,
-//                                          g_strndup (remainder, len));
-//           n++;
-//           remainder = s + delimiter_len;
-//           s = strstr (remainder, delimiter);
-//         }
-//     }
-//   if (*string)
-//     {
-//       n++;
-//       string_list = g_slist_prepend (string_list, g_strdup (remainder));
-//     }
+          len = s - remainder;
+          string_list = g_slist_prepend (string_list,
+                                         g_strndup (remainder, len));
+          n++;
+          remainder = s + delimiter_len;
+          s = strstr (remainder, delimiter);
+        }
+    }
+  if (*string)
+    {
+      n++;
+      string_list = g_slist_prepend (string_list, g_strdup (remainder));
+    }
 
-//   str_array = g_new (gchar*, n + 1);
+  str_array = g_new (gchar*, n + 1);
 
-//   str_array[n--] = NULL;
-//   for (slist = string_list; slist; slist = slist->next)
-//     str_array[n--] = slist->data;
+  str_array[n--] = NULL;
+  for (slist = string_list; slist; slist = slist->next)
+    str_array[n--] = slist->data;
 
-//   g_slist_free (string_list);
+  g_slist_free (string_list);
 
-//   return str_array;
-// }
+  return str_array;
+}
 
 /**
  * g_strsplit_set:

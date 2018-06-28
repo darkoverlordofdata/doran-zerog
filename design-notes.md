@@ -1,3 +1,18 @@
+# GLib/GObject
+add_definitions( -DGLIB_COMPILATION )
+add_definitions( -DG_DISABLE_CHECKS )
+add_definitions( -DGOBJECT_COMPILATION )
+# PCRE
+add_definitions( -DLINK_SIZE=2 )
+add_definitions( -DMAX_NAME_COUNT=10000 )
+add_definitions( -DMAX_NAME_SIZE=32 )
+add_definitions( -DNEWLINE=-1 )
+add_definitions( -DPOSIX_MALLOC_THRESHOLD=10 )
+add_definitions( -DMATCH_LIMIT=10000000 )
+add_definitions( -DMATCH_LIMIT_RECURSION=10000000 )
+
+
+
 # Reason
 
 GLib and GObject are a mess. There is no separation of concern, everything is twisted together. It can't be used modularly. I can't just leave threading out. I can't even get it to compile as is. The only reasons for using it is that other projects depend on it.

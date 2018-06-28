@@ -1413,15 +1413,21 @@ public class string {
 	}
 
 	public string replace (string old, string replacement) {
-		if (*((char*) this) == '\0' || *((char*) old) == '\0' || old == replacement)
-			return this;
+		var i = index_of(old);
+		if (i<0) return this;
 
-		try {
-			var regex = new GLib.Regex (GLib.Regex.escape_string (old));
-			return regex.replace_literal (this, -1, 0, replacement);
-		} catch (GLib.RegexError e) {
-			GLib.assert_not_reached ();
-		}
+		var s1 = substring(0, i);
+		var s2 = substring(i+old.length);
+		return s1 + replacement + s2;
+		// if (*((char*) this) == '\0' || *((char*) old) == '\0' || old == replacement)
+		// 	return this;
+
+		// try {
+		// 	var regex = new GLib.Regex (GLib.Regex.escape_string (old));
+		// 	return regex.replace_literal (this, -1, 0, replacement);
+		// } catch (GLib.RegexError e) {
+		// 	GLib.assert_not_reached ();
+		// }
 	}
 
 	[CCode (cname = "g_utf8_strlen")]
