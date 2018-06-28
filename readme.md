@@ -16,6 +16,10 @@ Based on the Gnome's GLib and GObject. Valauses GLib as it's runtime, but there 
 
 No threading, no marshalling, no notifications.
 No custom gobject constructor or properties.
+No Variant data type, nothing that relies on Variant, such as 
+        
+        GLib.Object(Mode: 420);
+        
 Just support for the oop syntax.
 
 ### status: 

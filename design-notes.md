@@ -49,3 +49,11 @@ I'm skipping gdir and genviron for now. This is os specific. I'm forcing the OS 
 
 # Ball Of Mud
 I can see now that GLib is a ball-of-mud design pattern. That should all be several modules. But I've read that gnome actually went the opposite direction, consolidating into fewer modules.
+
+### Xna Missing with Zerog:
+
+    1 - g_key_file - ini files
+    2 - str.replace needs regex
+    3 - GraphicsDevice - lock/unlock
+    4 - g_strsplit GamePad
+    
