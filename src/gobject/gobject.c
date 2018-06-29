@@ -141,6 +141,12 @@ enum {
 
 
 /* --- prototypes --- */
+gchar* g_object_to_string(GObject *object);
+gboolean g_object_equals(GObject *object, GObject *other);
+gint g_object_get_hash_code(GObject *object);
+gboolean g_object_instance_equals(GObject *object, GObject *other);
+gboolean g_object_reference_equals(GObject *object, GObject *other);
+
 static void	g_object_base_class_init		(GObjectClass	*class);
 static void	g_object_base_class_finalize		(GObjectClass	*class);
 static void	g_object_do_class_init			(GObjectClass	*class);
@@ -471,6 +477,10 @@ g_object_do_class_init (GObjectClass *class)
   class->finalize = g_object_finalize;
   class->dispatch_properties_changed = g_object_dispatch_properties_changed;
   class->notify = NULL;
+  // Base Virtual Methods
+  class->ToString = g_object_to_string;
+  class->Equals = g_object_equals;
+  class->GetHashCode = g_object_get_hash_code;
 
   /**
    * GObject::notify:
@@ -516,6 +526,61 @@ g_object_do_class_init (GObjectClass *class)
    */
   g_type_add_interface_check (NULL, object_interface_check_properties);
 }
+
+// GetHashCode is intended to serve as a hash function for this object.
+// Based on the contents of the object, the hash function will return a suitable
+// value with a relatively random distribution over the various inputs.
+//
+// The default implementation returns the address for this instance.
+// Calling it on the same object multiple times will return the same value, so
+// it will technically meet the needs of a hash function, but it's less than ideal.
+// Objects (& especially value classes) should override this method.
+//
+gint g_object_get_hash_code(GObject *object)
+{
+  return (gint)object;
+}
+
+// Returns a String which represents the object instance.  The default
+// for an object is to return the fully qualified name of the class.
+// 
+gchar* g_object_to_string(GObject *object)
+{
+  return g_strdup ( g_type_name ( G_TYPE_FROM_INSTANCE (object) ) );
+
+
+  // GType* type = G_TYPE_FROM_INSTANCE (object);
+  // gchar* name = g_type_name(*type);
+  // return g_strdup(name);
+}
+
+// Returns a boolean indicating if the passed in object obj is 
+// Equal to this.  Equality is defined as object equality for reference
+// types and bitwise equality for value types using a loader trick to
+// replace Equals with EqualsValue for value types).
+//     
+gboolean g_object_equals(GObject *object, GObject *other)
+{
+  return object == other;
+}
+
+gboolean g_object_instance_equals(GObject *objA, GObject *objB)
+{
+  if (objA == objB)
+    return TRUE;
+
+  if (objA==NULL || objB==NULL)
+    return FALSE;
+
+  return G_OBJECT_GET_CLASS (objA)->Equals (objA, objB);
+
+}
+
+gboolean g_object_reference_equals(GObject *objA, GObject *objB)
+{
+  return (objA == objB);
+}
+
 
 static inline gboolean
 install_property_internal (GType       g_type,

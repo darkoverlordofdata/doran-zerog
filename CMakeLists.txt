@@ -97,6 +97,12 @@ list ( APPEND CSOURCE .lib/zerog/src/zerog.c )
 list ( APPEND VALA_OPTION --define=NOGOBJECT )
 list ( APPEND VALA_OPTION --vapidir=${CMAKE_SOURCE_DIR}/.lib/zerog/vapis)
 
+
+list ( APPEND DEFINITION -DGLIB_COMPILATION )
+list ( APPEND DEFINITION -DG_DISABLE_CHECKS )
+list ( APPEND DEFINITION -DGOBJECT_COMPILATION )
+
+
 ## Export to the parent scope:
 
 set ( ZEROG true PARENT_SCOPE )
@@ -104,4 +110,16 @@ set ( INCLUDES "${INCLUDES};${INCLUDE}" PARENT_SCOPE )
 set ( C_SOURCES "${C_SOURCES};${CSOURCE}" PARENT_SCOPE )
 set ( VALAC_OPTIONS "${VALAC_OPTIONS};${VALA_OPTION}" PARENT_SCOPE )
 
+# GLib/GObject
+add_definitions( -DGLIB_COMPILATION )
+add_definitions( -DG_DISABLE_CHECKS )
+add_definitions( -DGOBJECT_COMPILATION )
+# PCRE
+add_definitions( -DLINK_SIZE=2 )
+add_definitions( -DMAX_NAME_COUNT=10000 )
+add_definitions( -DMAX_NAME_SIZE=32 )
+add_definitions( -DNEWLINE=-1 )
+add_definitions( -DPOSIX_MALLOC_THRESHOLD=10 )
+add_definitions( -DMATCH_LIMIT=10000000 )
+add_definitions( -DMATCH_LIMIT_RECURSION=10000000 )
 
