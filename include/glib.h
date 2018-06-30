@@ -55,6 +55,7 @@
 #define _g_vsprintf  vsprintf
 #define _g_vsnprintf vsnprintf
 
+typedef void* IntPtr;
 
 
 #include <glib/galloca.h>

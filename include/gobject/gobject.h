@@ -356,7 +356,7 @@ struct  _GObjectClass
 
   /* padding */
   gpointer	pdummy[6];
-};
+}; 
 /**
  * GObjectConstructParam:
  * @pspec: the #GParamSpec of the construct parameter

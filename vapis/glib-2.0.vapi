@@ -27,7 +27,6 @@
  *	Raffaele Sandrini <rasa@gmx.ch>
  *	Mathias Hasselmann <mathias.hasselmann@gmx.de>
  */
-
 [SimpleType]
 [GIR (name = "gboolean")]
 [CCode (cname = "gboolean", cheader_filename = "glib.h", type_id = "G_TYPE_BOOLEAN", marshaller_type_name = "BOOLEAN", get_value_function = "g_value_get_boolean", set_value_function = "g_value_set_boolean", default_value = "FALSE", type_signature = "b")]
@@ -1506,6 +1505,8 @@ public class string16 {
 
 [CCode (cprefix = "G", lower_case_cprefix = "g_", cheader_filename = "glib.h", gir_namespace = "GLib", gir_version = "2.0")]
 namespace GLib {
+
+
 	[CCode (lower_case_cprefix = "", cheader_filename = "math.h")]
 	namespace Math {
 		[CCode (cname = "G_E")]

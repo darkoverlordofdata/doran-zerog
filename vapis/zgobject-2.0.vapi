@@ -24,43 +24,6 @@
  *	Mathias Hasselmann <mathias.hasselmann@gmx.de>
  */
 
-/*
- * A platform-specific type that is used to represent a pointer or a handle
- */
-[Compact, CCode (cname="gconstpointer", ref_function = "", unref_function = "")]
-public class IntPtr 
-{ 
-	public static IntPtr Zero { get { return (IntPtr)0; } }
-	public static int Size { get { return (int)sizeof(IntPtr); } }
-
-	public static IntPtr Add(IntPtr pointer, int offset)
-	{
-		return (IntPtr)((int)pointer + offset);
-	}
-	public static IntPtr Subtract(IntPtr pointer, int offset)
-	{
-		return (IntPtr)((int)pointer - offset);
-	}
-	public bool Equals(IntPtr other)
-	{
-		return this == other;
-	}
-	public int GetHashCode()
-	{
-		return (int)this;
-	}
-	public string to_string()
-	{
-		return "IntPtr(%d)".printf((int)this);
-	}
-	public string ToString()
-	{
-		return "IntPtr(%d)".printf((int)this);
-	}
-
-}
-
-
 [CCode (cheader_filename = "glib.h", cprefix = "G", gir_namespace = "GObject", gir_version = "2.0", lower_case_cprefix = "g_")]
 namespace GLib {
 	[CCode (lower_case_csuffix = "enum")]
@@ -86,11 +49,8 @@ namespace GLib {
 	}
 	[CCode (cheader_filename = "glib-object.h", get_value_function = "g_value_get_object", marshaller_type_name = "OBJECT", param_spec_function = "g_param_spec_object", ref_function = "g_object_ref", set_value_function = "g_value_set_object", take_value_function = "g_value_take_object", unref_function = "g_object_unref")]
 	public class Object {
-		public uint ref_count;
-		[CCode (construct_function = "g_object_new", has_new_function = false)]
-		public Object (...);
 		/**
-		 * Mono compatability
+		 * Virtual methods added for Xna
 		 */
 		[CCode (cname = "g_object_to_string")]
 		public virtual string ToString();
@@ -107,6 +67,9 @@ namespace GLib {
 		/**
 		 * GObject base
 		 */
+		public uint ref_count;
+		[CCode (construct_function = "g_object_new", has_new_function = false)]
+		public Object (...);
 		[CCode (cname = "g_object_run_dispose")]
 		public virtual void dispose ();
 		[CCode (cname = "G_OBJECT_GET_CLASS")]

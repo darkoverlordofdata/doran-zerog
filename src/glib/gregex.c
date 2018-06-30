@@ -238,6 +238,26 @@ static GList    *split_replacement              (const gchar *replacement,
                                                  GError **error);
 static void      free_interpolation_data        (InterpolationData *data);
 
+/*************************************************
+*            Local malloc functions              *
+*************************************************/
+
+/* Alternative malloc function, to test functionality and save the size of a
+compiled re, which is the first store request that pcre_compile() makes. The
+show_malloc variable is set only during matching. */
+
+// static void *new_malloc(size_t size)
+// {
+//   void *block = malloc(size);
+//   return block;
+// }
+
+// static void new_free(void *block)
+// {
+//   free(block);
+// }
+
+
 
 static const gchar *
 match_error (gint errcode)
@@ -1259,9 +1279,11 @@ g_regex_unref (GRegex *regex)
     {
       g_free (regex->pattern);
       if (regex->pcre_re != NULL)
-        pcre_free (regex->pcre_re);
+        free (regex->pcre_re);
+        // pcre_free (regex->pcre_re);
       if (regex->extra != NULL)
-        pcre_free (regex->extra);
+        free (regex->extra);
+        // pcre_free (regex->extra);
       g_free (regex);
     }
 }
