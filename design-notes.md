@@ -12,7 +12,7 @@ I want to use Vala. But that ties me to a morass of dependency issues that are n
 GLib.Object is customised to include some virtual methods copied from CSharp:
 ToString, GatHashCode, and Equals, along with static methods: InstanceEquals and ReferenceEquals. This is to make it easier to port from CSharp, such as the Xna port.
 
-
+The original GObject and GType class objectd would both crash when used with Corange entities and assets. Possibly because Corange is not thread safe. So I had to use Compact class. With ZeroG however, both GObject and GType class objects work, so entities can now have interfaces, inheritance, private methods, etc. 
 
 ### pcre
 

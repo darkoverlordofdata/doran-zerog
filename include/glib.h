@@ -55,8 +55,6 @@
 #define _g_vsprintf  vsprintf
 #define _g_vsnprintf vsnprintf
 
-typedef void* IntPtr;
-
 
 #include <glib/galloca.h>
 #include <glib/garray.h>
@@ -126,6 +124,7 @@ typedef void* IntPtr;
 #include <glib/gvariant.h>
 #include <glib/gversion.h>
 #include <glib/gversionmacros.h>
+#include <glib/zintptr.h>
 
 #undef __GLIB_H_INSIDE__
 

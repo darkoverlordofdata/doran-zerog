@@ -1,5 +1,8 @@
 /* gobject-2.0.vala
  *
+ * Modified for ZeroG
+ * Copyright (C) 2018 Dark Overlord of Data
+ *
  * Copyright (C) 2006-2010  Jürg Billeter
  * Copyright (C) 2006-2008  Raffaele Sandrini
  * Copyright (C) 2007  Mathias Hasselmann
@@ -27,37 +30,51 @@
 /*
  * A platform-specific type that is used to represent a pointer or a handle
  */
-[Compact, CCode (cname="gconstpointer", ref_function = "", unref_function = "")]
-public class IntPtr 
-{ 
-	public static IntPtr Zero { get { return (IntPtr)0; } }
-	public static int Size { get { return (int)sizeof(IntPtr); } }
 
-	public static IntPtr Add(IntPtr pointer, int offset)
-	{
-		return (IntPtr)((int)pointer + offset);
-	}
-	public static IntPtr Subtract(IntPtr pointer, int offset)
-	{
-		return (IntPtr)((int)pointer - offset);
-	}
-	public bool Equals(IntPtr other)
-	{
-		return this == other;
-	}
-	public int GetHashCode()
-	{
-		return (int)this;
-	}
+[Compact, CCode (cname="ZIntPtr", cheader_filename = "glib.h", ref_function = "", unref_function = "")]
+public class IntPtr 
+{
+	private int m_value;
+
+	[CCode (cname = "z_int_ptr_Zero")]
+	public static IntPtr Zero;
+
+	[CCode (cname = "z_int_ptr_Size")]
+	public static int Size;
+
+	/**
+	 * IntPtr is not ref counted or gc'd, so be
+	 * sure to free any IntPtr's created using new
+	 */
+	[CCode (cname = "z_int_ptr_new")]
+	public IntPtr(ulong ptr);
+
+	[CCode (cname = "z_int_ptr_ToPointer")]
+	public void* ToPointer();
+
+	[CCode (cname = "z_int_ptr_Equals")]
+	public bool Equals(IntPtr other);
+
+	[CCode (cname = "z_int_ptr_IsNull")]
+	public bool IsNull();
+
+	[CCode (cname = "z_int_ptr_GetHashCode")]
+	public int GetHashCode();
+
+	[CCode (cname = "z_int_ptr_Add")]
+	public static IntPtr Add(IntPtr pointer, int offset);
+
+	[CCode (cname = "z_int_ptr_Subtract")]
+	public static IntPtr Subtract(IntPtr pointer, int offset);
+
 	public string to_string()
 	{
-		return "IntPtr(%d)".printf((int)this);
+		return "IntPtr(0x%08x)".printf(m_value);
 	}
 	public string ToString()
 	{
-		return "IntPtr(%d)".printf((int)this);
+		return "IntPtr(0x%08x)".printf(m_value);
 	}
-
 }
 
 

@@ -51,6 +51,7 @@ list ( APPEND CSOURCE .lib/zerog/src/glib/gutils.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/zuniprop.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/guuid.c )
 list ( APPEND CSOURCE .lib/zerog/src/glib/gversion.c )
+list ( APPEND CSOURCE .lib/zerog/src/glib/zintptr.c )
 
 # list ( APPEND CSOURCE .lib/zerog/src/glib/pcre/pcre_byte_order.c )
 # list ( APPEND CSOURCE .lib/zerog/src/glib/pcre/pcre_chartables.c )
@@ -112,10 +113,6 @@ set ( INCLUDES "${INCLUDES};${INCLUDE}" PARENT_SCOPE )
 set ( C_SOURCES "${C_SOURCES};${CSOURCE}" PARENT_SCOPE )
 set ( VALAC_OPTIONS "${VALAC_OPTIONS};${VALA_OPTION}" PARENT_SCOPE )
 
-# # GLib/GObject
-# add_definitions( -DGLIB_COMPILATION )
-# add_definitions( -DG_DISABLE_CHECKS )
-# add_definitions( -DGOBJECT_COMPILATION )
 # # PCRE
 # add_definitions( -DLINK_SIZE=2 )
 # add_definitions( -DMAX_NAME_COUNT=10000 )
