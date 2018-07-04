@@ -764,6 +764,12 @@ public struct uint64 {
 [CCode (cname = "gfloat", cheader_filename = "glib.h,float.h,math.h", type_id = "G_TYPE_FLOAT", marshaller_type_name = "FLOAT", get_value_function = "g_value_get_float", set_value_function = "g_value_set_float", default_value = "0.0F")]
 [FloatingType (rank = 1)]
 public struct float {
+	public int GetHashCode()
+    {
+        if (this == 0) return 0;
+        long value = *(long*)(&this);
+        return ((int)value) ^ ((int)(value >> 32));
+    }
 	[CCode (cname = "FLT_ROUNDS")]
 	public const int ROUNDS;
 	[CCode (cname = "FLT_RADIX")]

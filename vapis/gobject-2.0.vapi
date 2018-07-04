@@ -47,7 +47,10 @@ public class IntPtr
 	 * sure to free any IntPtr's created using new
 	 */
 	[CCode (cname = "z_int_ptr_new")]
-	public IntPtr(ulong ptr);
+	public IntPtr(void* ptr);
+
+	[CCode (cname = "z_int_ptr_new")]
+	public IntPtr.ULong(ulong ptr);
 
 	[CCode (cname = "z_int_ptr_ToPointer")]
 	public void* ToPointer();

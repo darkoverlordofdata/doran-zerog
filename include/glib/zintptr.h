@@ -12,7 +12,10 @@ typedef struct ZIntPtr
 } ZIntPtr;
 
 GLIB_AVAILABLE_IN_ALL
-ZIntPtr* z_int_ptr_new              (const gint ptr);
+ZIntPtr* z_int_ptr_new              (const void* ptr);
+
+// GLIB_AVAILABLE_IN_ALL
+// ZIntPtr* z_int_ptr_ULong            (const gulong ptr);
 
 GLIB_AVAILABLE_IN_ALL
 gpointer z_int_ptr_ToPointer        (const ZIntPtr* this);

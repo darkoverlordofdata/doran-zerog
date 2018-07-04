@@ -4,7 +4,7 @@
 #include <glib/zintptr.h>
 
 ZIntPtr* 
-z_int_ptr_new(const gint ptr)
+z_int_ptr_new(const void* ptr)
 {
     ZIntPtr *int_ptr;
 
@@ -12,6 +12,16 @@ z_int_ptr_new(const gint ptr)
     int_ptr->m_value = ptr;
     return int_ptr;
 }
+
+// ZIntPtr* 
+// z_int_ptr_ULong(const gulong ptr)
+// {
+//     ZIntPtr *int_ptr;
+
+//     int_ptr = g_slice_new (ZIntPtr);
+//     int_ptr->m_value = ptr;
+//     return int_ptr;
+// }
 
 ZIntPtr* z_int_ptr_Zero = { 0 };
 
