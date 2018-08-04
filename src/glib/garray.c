@@ -711,21 +711,21 @@ g_array_remove_range (GArray *farray,
  *
  * This is guaranteed to be a stable sort since version 2.32.
  */
-// void
-// g_array_sort (GArray       *farray,
-//               GCompareFunc  compare_func)
-// {
-//   GRealArray *array = (GRealArray*) farray;
+void
+g_array_sort (GArray       *farray,
+              GCompareFunc  compare_func)
+{
+  GRealArray *array = (GRealArray*) farray;
 
-//   g_return_if_fail (array != NULL);
+  g_return_if_fail (array != NULL);
 
-//   /* Don't use qsort as we want a guaranteed stable sort */
-//   g_qsort_with_data (array->data,
-//                      array->len,
-//                      array->elt_size,
-//                      (GCompareDataFunc)compare_func,
-//                      NULL);
-// }
+  /* Don't use qsort as we want a guaranteed stable sort */
+  g_qsort_with_data (array->data,
+                     array->len,
+                     array->elt_size,
+                     (GCompareDataFunc)compare_func,
+                     NULL);
+}
 
 /**
  * g_array_sort_with_data:
@@ -742,21 +742,21 @@ g_array_remove_range (GArray *farray,
  * using the addresses of the elements in the comparison function.
  * This did not actually work, so any such code should be removed.
  */
-// void
-// g_array_sort_with_data (GArray           *farray,
-//                         GCompareDataFunc  compare_func,
-//                         gpointer          user_data)
-// {
-//   GRealArray *array = (GRealArray*) farray;
+void
+g_array_sort_with_data (GArray           *farray,
+                        GCompareDataFunc  compare_func,
+                        gpointer          user_data)
+{
+  GRealArray *array = (GRealArray*) farray;
 
-//   g_return_if_fail (array != NULL);
+  g_return_if_fail (array != NULL);
 
-//   g_qsort_with_data (array->data,
-//                      array->len,
-//                      array->elt_size,
-//                      compare_func,
-//                      user_data);
-// }
+  g_qsort_with_data (array->data,
+                     array->len,
+                     array->elt_size,
+                     compare_func,
+                     user_data);
+}
 
 /* Returns the smallest power of 2 greater than n, or n if
  * such power does not fit in a guint
@@ -1444,19 +1444,19 @@ g_ptr_array_insert (GPtrArray *array,
  *
  * This is guaranteed to be a stable sort since version 2.32.
  */
-// void
-// g_ptr_array_sort (GPtrArray    *array,
-//                   GCompareFunc  compare_func)
-// {
-//   g_return_if_fail (array != NULL);
+void
+g_ptr_array_sort (GPtrArray    *array,
+                  GCompareFunc  compare_func)
+{
+  g_return_if_fail (array != NULL);
 
-//   /* Don't use qsort as we want a guaranteed stable sort */
-//   g_qsort_with_data (array->pdata,
-//                      array->len,
-//                      sizeof (gpointer),
-//                      (GCompareDataFunc)compare_func,
-//                      NULL);
-// }
+  /* Don't use qsort as we want a guaranteed stable sort */
+  g_qsort_with_data (array->pdata,
+                     array->len,
+                     sizeof (gpointer),
+                     (GCompareDataFunc)compare_func,
+                     NULL);
+}
 
 /**
  * g_ptr_array_sort_with_data:
@@ -1473,19 +1473,19 @@ g_ptr_array_insert (GPtrArray *array,
  *
  * This is guaranteed to be a stable sort since version 2.32.
  */
-// void
-// g_ptr_array_sort_with_data (GPtrArray        *array,
-//                             GCompareDataFunc  compare_func,
-//                             gpointer          user_data)
-// {
-//   g_return_if_fail (array != NULL);
+void
+g_ptr_array_sort_with_data (GPtrArray        *array,
+                            GCompareDataFunc  compare_func,
+                            gpointer          user_data)
+{
+  g_return_if_fail (array != NULL);
 
-//   g_qsort_with_data (array->pdata,
-//                      array->len,
-//                      sizeof (gpointer),
-//                      compare_func,
-//                      user_data);
-// }
+  g_qsort_with_data (array->pdata,
+                     array->len,
+                     sizeof (gpointer),
+                     compare_func,
+                     user_data);
+}
 
 /**
  * g_ptr_array_foreach:
