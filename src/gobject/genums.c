@@ -404,9 +404,11 @@ g_enum_get_value_by_name (GEnumClass  *enum_class,
     {
       GEnumValue *enum_value;
       
-      for (enum_value = enum_class->values; enum_value->value_name; enum_value++)
-	if (strcmp (name, enum_value->value_name) == 0)
-	  return enum_value;
+      for (enum_value = enum_class->values; enum_value->value_name; enum_value++) 
+      {
+        if (strcmp (name, enum_value->value_name) == 0)
+          return enum_value;
+      }
     }
   
   return NULL;

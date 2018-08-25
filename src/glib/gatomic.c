@@ -621,6 +621,7 @@ gboolean
                                          gpointer       oldval,
                                          gpointer       newval)
 {
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   return InterlockedCompareExchangePointer (atomic, newval, oldval) == oldval;
 }
 

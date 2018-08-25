@@ -55,81 +55,9 @@ strdup_len (const gchar *string,
     return new_str;
 
 }
-/**
- * Replace utf conversion with string copy,
- * so it's essentially doing nothing.
- * Every one of these g_utf8_?? functions are in a different file. 
- * Gnome - you're worse than M$
- */
-gchar *
-g_utf8_casefold (const gchar *str,
-		 gssize       len)
-{
-    // TRACE("trace: g_utf8_casefold\n");
-    g_return_val_if_fail (str != NULL, NULL);
-    // result = g_strdup(str);}
-    return strdup_len (str, len, NULL, NULL, NULL);
-
-}
-
-gchar *
-g_utf8_normalize (const gchar    *str,
-		  gssize          len,
-		  GNormalizeMode  mode)
-{
-    // TRACE("trace: g_utf8_normalize\n");
-    g_return_val_if_fail (str != NULL, NULL);
-    // result = g_strdup(str);
-    return strdup_len (str, len, NULL, NULL, NULL);
-}
-
-gchar *
-g_utf8_strup (const gchar *str,
-	      gssize       len)
-{
-    // TRACE("trace: g_utf8_strup\n");
-    g_return_val_if_fail (str  != NULL, 0);
-
-    int l = strlen(str);
-    int i = 0;
-
-    gchar *s = g_new (char, l);
-    gchar *result = s;
-    gint n = len;
-    
-    while ((len < 0 && *s) || i < l) 
-    {
-        *s = toupper(*(str+i));
-        s += 1;
-        i += 1;
-    } 
-    return result;
-}
-
-gchar *
-g_utf8_strdown (const gchar *str,
-	      gssize       len)
-{
-    // TRACE("trace: g_utf8_strdown\n");
-    g_return_val_if_fail (str  != NULL, 0);
-
-    int l = strlen(str);
-    int i = 0;
-
-    gchar *s = g_new (char, l);
-    gchar *result = s;
-    gint n = len;
-    
-    while ((len < 0 && *s) || i < l) 
-    {
-        *s = tolower(*(str+i));
-        s += 1;
-        i += 1;
-    } 
-    return result;
-}
 
 
+// gcharset.c
 gboolean
 g_get_charset (const char **charset)
 {
@@ -140,6 +68,7 @@ g_get_charset (const char **charset)
     return TRUE;
 }
 
+// gconvert.c
 gchar *
 g_locale_to_utf8 (const gchar  *opsysstring,
 		  gssize        len,            
@@ -329,20 +258,6 @@ g_trash_stack_pop (GTrashStack **stack_p)
 {
     // TRACE("trace: g_trash_stack_pop\n");
     return NULL;
-}
-
-gboolean
-g_unichar_isalnum (gunichar c)
-{
-    // TRACE("trace: g_unichar_isalnum\n");
-    return isalnum(c);
-}
-
-gboolean
-g_unichar_ismark (gunichar c)
-{
-    // TRACE("trace: g_unichar_ismark\n");
-    return FALSE;
 }
 
 gchar *
