@@ -28,6 +28,9 @@
 #endif
 
 // G_DEFINE_BOXED_TYPE (GIOChannel, g_io_channel, g_io_channel_ref, g_io_channel_unref)
+GType
+g_flags_register_static (const gchar	   *name,
+			 const GFlagsValue *const_static_values);
 
 GType
 g_io_condition_get_type (void)

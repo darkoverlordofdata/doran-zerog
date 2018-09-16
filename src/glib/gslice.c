@@ -19,6 +19,12 @@
 #include <config.h>
 #include <glibconfig.h>
 #include <glib/gslice.h>
+  
+// missing forward decl
+gpointer g_malloc (gsize n_bytes);
+void * memset ( void * ptr, int value, size_t num );
+void   g_free (gpointer mem);
+void * memcpy ( void * destination, const void * source, size_t num );
 
 /**
  * g_slice_alloc:

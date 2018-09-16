@@ -32,6 +32,9 @@
 #include <config.h>
 
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 
 #include <glib/gslice.h>
 #include <glib/ghash.h>
@@ -44,7 +47,6 @@
 
 #define QUARK_BLOCK_SIZE         2048
 #define QUARK_STRING_BLOCK_SIZE (4096 - sizeof (gsize))
-
 static inline GQuark  quark_new (gchar *string);
 
 G_LOCK_DEFINE_STATIC (quark_global);
@@ -180,7 +182,6 @@ quark_from_string (const gchar *string,
   GQuark quark = 0;
 
   quark = GPOINTER_TO_UINT (g_hash_table_lookup (quark_ht, string));
-
   if (!quark)
     {
       quark = quark_new (duplicate ? quark_strdup (string) : (gchar *)string);
@@ -263,8 +264,11 @@ g_quark_to_string (GQuark quark)
   gint seq_id;
 
   seq_id = g_atomic_int_get (&quark_seq_id);
+#ifdef __EMSCRIPTEN__
+  strings = quarks;
+#else
   strings = g_atomic_pointer_get (&quarks);
-
+#endif
   if (quark < seq_id)
     result = strings[quark];
 
@@ -277,6 +281,7 @@ quark_new (gchar *string)
 {
   GQuark quark;
   gchar **quarks_new;
+      
 
   if (quark_seq_id % QUARK_BLOCK_SIZE == 0)
     {
@@ -288,11 +293,19 @@ quark_new (gchar *string)
        * us to do lockless lookup of the arrays, and there shouldn't be that
        * many quarks in an app
        */
+#ifdef __EMSCRIPTEN__
+      quarks = quarks_new;
+#else
       g_atomic_pointer_set (&quarks, quarks_new);
+#endif
     }
 
   quark = quark_seq_id;
+#ifdef __EMSCRIPTEN__
+  quarks[quark] = g_strdup(string);
+#else
   g_atomic_pointer_set (&quarks[quark], string);
+#endif
   g_hash_table_insert (quark_ht, string, GUINT_TO_POINTER (quark));
   g_atomic_int_inc (&quark_seq_id);
 
@@ -303,14 +316,15 @@ static inline const gchar *
 quark_intern_string_locked (const gchar   *string,
                             gboolean       duplicate)
 {
-  const gchar *result;
+  //const 
+  gchar *result;
   GQuark quark;
 
   if (!string)
     return NULL;
-
   // G_LOCK (quark_global);
   quark = quark_from_string (string, duplicate);
+  // if (quark == 4) quarks[4] = "Frodo";
   result = quarks[quark];
   // G_UNLOCK (quark_global);
 

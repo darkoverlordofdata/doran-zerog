@@ -389,6 +389,15 @@ static GHashTable       *static_type_nodes_ht = NULL;
 static TypeNode		*static_fundamental_type_nodes[(G_TYPE_FUNDAMENTAL_MAX >> G_TYPE_FUNDAMENTAL_SHIFT) + 1] = { NULL, };
 static GType		 static_fundamental_next = G_TYPE_RESERVED_USER_FIRST;
 
+void _g_value_c_init (void);
+void _g_value_types_init (void);
+void _g_enum_types_init (void);
+void _g_boxed_type_init (void);
+void _g_param_type_init (void);
+void _g_object_type_init (void);
+void _g_param_spec_types_init (void);
+void _g_signal_init (void);
+
 static inline TypeNode*
 lookup_type_node_I (GType utype)
 {
@@ -537,7 +546,6 @@ type_node_fundamental_new_W (GType                 ftype,
 {
   GTypeFundamentalInfo *finfo;
   TypeNode *node;
-  
   g_assert ((ftype & TYPE_ID_MASK) == 0);
   g_assert (ftype <= G_TYPE_FUNDAMENTAL_MAX);
   
@@ -547,6 +555,7 @@ type_node_fundamental_new_W (GType                 ftype,
   type_flags &= TYPE_FUNDAMENTAL_FLAG_MASK;
   
   node = type_node_any_new_W (NULL, ftype, name, NULL, type_flags);
+  //+++++ return NULL;
   
   finfo = type_node_fundamental_info_I (node);
   finfo->type_flags = type_flags;
@@ -1843,8 +1852,8 @@ g_type_create_instance (GType type)
       *(gpointer *) (allocated + private_size + ivar_size) = allocated + ALIGN_STRUCT (1);
 
       /* Tell valgrind that it should treat the object itself as such */
-      VALGRIND_MALLOCLIKE_BLOCK (allocated + private_size, ivar_size + sizeof (gpointer), 0, TRUE);
-      VALGRIND_MALLOCLIKE_BLOCK (allocated + ALIGN_STRUCT (1), private_size - ALIGN_STRUCT (1), 0, TRUE);
+      // VALGRIND_MALLOCLIKE_BLOCK (allocated + private_size, ivar_size + sizeof (gpointer), 0, TRUE);
+      // VALGRIND_MALLOCLIKE_BLOCK (allocated + ALIGN_STRUCT (1), private_size - ALIGN_STRUCT (1), 0, TRUE);
     }
   else
     allocated = g_slice_alloc0 (private_size + ivar_size);
@@ -1938,8 +1947,8 @@ g_type_free_instance (GTypeInstance *instance)
       /* ... and ensure we include it in the size we free. */
       g_slice_free1 (private_size + ivar_size + sizeof (gpointer), allocated);
 
-      VALGRIND_FREELIKE_BLOCK (allocated + ALIGN_STRUCT (1), 0);
-      VALGRIND_FREELIKE_BLOCK (instance, 0);
+      // VALGRIND_FREELIKE_BLOCK (allocated + ALIGN_STRUCT (1), 0);
+      // VALGRIND_FREELIKE_BLOCK (instance, 0);
     }
   else
     g_slice_free1 (private_size + ivar_size, allocated);
@@ -4374,7 +4383,6 @@ gobject_init (void)
   // GLIB_PRIVATE_CALL (glib_init) ();
 
   // G_WRITE_LOCK (&type_rw_lock);
-
   /* setup GObject library wide debugging flags */
   env_string = g_getenv ("GOBJECT_DEBUG");
   if (env_string != NULL)
@@ -4403,6 +4411,7 @@ gobject_init (void)
   /* void type G_TYPE_NONE
    */
   node = type_node_fundamental_new_W (G_TYPE_NONE, g_intern_static_string ("void"), 0);
+  //+++++ return;
   type = NODE_TYPE (node);
   g_assert (type == G_TYPE_NONE);
 

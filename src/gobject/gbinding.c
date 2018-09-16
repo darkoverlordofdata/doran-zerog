@@ -120,6 +120,10 @@
 #define g_once_init_leave(x,y) (*(x) = y)
 
 GType
+g_flags_register_static (const gchar	   *name,
+			 const GFlagsValue *const_static_values);
+
+GType
 g_binding_flags_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;

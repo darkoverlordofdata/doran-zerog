@@ -122,7 +122,11 @@ _g_atomic_array_copy (GAtomicArray *array,
   gsize old_size, new_size;
 
   // G_LOCK (array);
+#ifdef __EMSCRIPTEN__
+  old = array->data;
+#else
   old = g_atomic_pointer_get (&array->data);
+#endif
   if (old)
     {
       old_size = G_ATOMIC_ARRAY_DATA_SIZE (old);
@@ -155,11 +159,19 @@ _g_atomic_array_update (GAtomicArray *array,
   guint8 *old;
 
   // G_LOCK (array);
+#ifdef __EMSCRIPTEN__
+  old = array->data;
+#else
   old = g_atomic_pointer_get (&array->data);
+#endif
 
   g_assert (old == NULL || G_ATOMIC_ARRAY_DATA_SIZE (old) <= G_ATOMIC_ARRAY_DATA_SIZE (new_data));
 
+#ifdef __EMSCRIPTEN__
+  array->data = new_data;
+#else
   g_atomic_pointer_set (&array->data, new_data);
+#endif
   if (old)
     freelist_free (old);
   // G_UNLOCK (array);

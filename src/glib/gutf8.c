@@ -123,6 +123,39 @@ static const gchar utf8_skip_data[256] = {
 
 const gchar * const g_utf8_skip = utf8_skip_data;
 
+
+#ifdef __EMSCRIPTEN__ 
+ 
+/**
+ * _:
+ * No GetText I18n 
+ * @str: (nullable): the string to duplicate
+ *
+ * Duplicates a string. If @str is %NULL it returns %NULL.
+ * The returned string should be freed with g_free()
+ * when no longer needed.
+ *
+ * Returns: a newly-allocated copy of @str
+ */
+gchar*
+_ (const gchar *str)
+{
+  gchar *new_str;
+  gsize length;
+
+  if (str)
+    {
+      length = strlen (str) + 1;
+      new_str = g_new (char, length);
+      memcpy (new_str, str, length);
+    }
+  else
+    new_str = NULL;
+
+  return new_str;
+}
+#endif
+
 /**
  * g_utf8_find_prev_char:
  * @str: pointer to the beginning of a UTF-8 encoded string

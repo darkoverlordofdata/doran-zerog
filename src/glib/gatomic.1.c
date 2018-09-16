@@ -21,8 +21,6 @@
 
 #include <glib/gatomic.h>
 
-void * memcpy ( void * destination, const void * source, size_t num );
-
 /**
  * SECTION:atomic_operations
  * @title: Atomic Operations
@@ -90,22 +88,22 @@ void * memcpy ( void * destination, const void * source, size_t num );
  * without risking recursion.
  */
 
-// #ifdef G_ATOMIC_LOCK_FREE
+#ifdef G_ATOMIC_LOCK_FREE
 
-// /* if G_ATOMIC_LOCK_FREE was defined by ./configure then we MUST
-//  * implement the atomic operations in a lock-free manner.
-//  */
+/* if G_ATOMIC_LOCK_FREE was defined by ./configure then we MUST
+ * implement the atomic operations in a lock-free manner.
+ */
 
-// #if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+#if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
 
-// #if defined(__ATOMIC_SEQ_CST) && !defined(__clang__)
-// /* The implementation used in this code path in gatomic.h assumes
-//  * 4-byte int */
-// G_STATIC_ASSERT (sizeof (gint) == 4);
+#if defined(__ATOMIC_SEQ_CST) && !defined(__clang__)
+/* The implementation used in this code path in gatomic.h assumes
+ * 4-byte int */
+G_STATIC_ASSERT (sizeof (gint) == 4);
 
-// /* The implementations in gatomic.h assume 4- or 8-byte pointers */
-// G_STATIC_ASSERT (sizeof (void *) == 4 || sizeof (void *) == 8);
-// #endif
+/* The implementations in gatomic.h assume 4- or 8-byte pointers */
+G_STATIC_ASSERT (sizeof (void *) == 4 || sizeof (void *) == 8);
+#endif
 
 /**
  * g_atomic_int_get:
@@ -123,8 +121,7 @@ void * memcpy ( void * destination, const void * source, size_t num );
 gint
 (g_atomic_int_get) (const volatile gint *atomic)
 {
-  return atomic;
-  // return g_atomic_int_get (atomic);
+  return g_atomic_int_get (atomic);
 }
 
 /**
@@ -143,8 +140,7 @@ void
 (g_atomic_int_set) (volatile gint *atomic,
                     gint           newval)
 {
-  *atomic = newval;
-  // g_atomic_int_set (atomic, newval);
+  g_atomic_int_set (atomic, newval);
 }
 
 /**
@@ -162,8 +158,7 @@ void
 void
 (g_atomic_int_inc) (volatile gint *atomic)
 {
-  *atomic += 1;
-  // g_atomic_int_inc (atomic);
+  g_atomic_int_inc (atomic);
 }
 
 /**
@@ -184,9 +179,7 @@ void
 gboolean
 (g_atomic_int_dec_and_test) (volatile gint *atomic)
 {
-  *atomic -= 1; 
-  return (*atomic == 0);
-  // return g_atomic_int_dec_and_test (atomic);
+  return g_atomic_int_dec_and_test (atomic);
 }
 
 /**
@@ -214,13 +207,7 @@ gboolean
                                      gint           oldval,
                                      gint           newval)
 {
-  if (*atomic == oldval) 
-  { 
-    *atomic = newval; 
-    return TRUE; 
-  } 
-  else return FALSE;
-  // return g_atomic_int_compare_and_exchange (atomic, oldval, newval);
+  return g_atomic_int_compare_and_exchange (atomic, oldval, newval);
 }
 
 /**
@@ -246,10 +233,7 @@ gint
 (g_atomic_int_add) (volatile gint *atomic,
                     gint           val)
 {
-  gint tmp = *atomic; 
-  *atomic += val; 
-  return tmp;
-  // return g_atomic_int_add (atomic, val);
+  return g_atomic_int_add (atomic, val);
 }
 
 /**
@@ -273,10 +257,7 @@ guint
 (g_atomic_int_and) (volatile guint *atomic,
                     guint           val)
 {
-  guint tmp = *atomic; 
-  *atomic &= val; 
-  return tmp;
-  // return g_atomic_int_and (atomic, val);
+  return g_atomic_int_and (atomic, val);
 }
 
 /**
@@ -300,10 +281,7 @@ guint
 (g_atomic_int_or) (volatile guint *atomic,
                    guint           val)
 {
-  guint tmp = *atomic; 
-  *atomic |= val; 
-  return tmp;
-  // return g_atomic_int_or (atomic, val);
+  return g_atomic_int_or (atomic, val);
 }
 
 /**
@@ -327,10 +305,7 @@ guint
 (g_atomic_int_xor) (volatile guint *atomic,
                     guint           val)
 {
-  guint tmp = *atomic; 
-  *atomic ^= val; 
-  return tmp;
-  // return g_atomic_int_xor (atomic, val);
+  return g_atomic_int_xor (atomic, val);
 }
 
 
@@ -350,8 +325,7 @@ guint
 gpointer
 (g_atomic_pointer_get) (const volatile void *atomic)
 {
-  return atomic;
-  // return g_atomic_pointer_get ((const volatile gpointer *) atomic);
+  return g_atomic_pointer_get ((const volatile gpointer *) atomic);
 }
 
 /**
@@ -370,8 +344,7 @@ void
 (g_atomic_pointer_set) (volatile void *atomic,
                         gpointer       newval)
 {
-  memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  // g_atomic_pointer_set ((volatile gpointer *) atomic, newval);
+  g_atomic_pointer_set ((volatile gpointer *) atomic, newval);
 }
 
 /**
@@ -399,14 +372,8 @@ gboolean
                                          gpointer       oldval,
                                          gpointer       newval)
 {
-  if (atomic == oldval) 
-  { 
-    memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-    return TRUE; 
-  } 
-  else return FALSE;
-  // return g_atomic_pointer_compare_and_exchange ((volatile gpointer *) atomic,
-  //                                               oldval, newval);
+  return g_atomic_pointer_compare_and_exchange ((volatile gpointer *) atomic,
+                                                oldval, newval);
 }
 
 /**
@@ -429,11 +396,7 @@ gssize
 (g_atomic_pointer_add) (volatile void *atomic,
                         gssize         val)
 {
-  void* tmp = atomic; 
-  void* newval = atomic+val;
-  memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  return tmp;
-  // return g_atomic_pointer_add ((volatile gpointer *) atomic, val);
+  return g_atomic_pointer_add ((volatile gpointer *) atomic, val);
 }
 
 /**
@@ -457,11 +420,7 @@ gsize
 (g_atomic_pointer_and) (volatile void *atomic,
                         gsize          val)
 {
-  void* tmp = atomic; 
-  void* newval = (int)atomic & val;
-  memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  return tmp;
-  // return g_atomic_pointer_and ((volatile gpointer *) atomic, val);
+  return g_atomic_pointer_and ((volatile gpointer *) atomic, val);
 }
 
 /**
@@ -485,11 +444,7 @@ gsize
 (g_atomic_pointer_or) (volatile void *atomic,
                        gsize          val)
 {
-  void* tmp = atomic; 
-  void* newval = (int)atomic | val;
-  memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  return tmp;
-  // return g_atomic_pointer_or ((volatile gpointer *) atomic, val);
+  return g_atomic_pointer_or ((volatile gpointer *) atomic, val);
 }
 
 /**
@@ -513,449 +468,445 @@ gsize
 (g_atomic_pointer_xor) (volatile void *atomic,
                         gsize          val)
 {
-  void* tmp = atomic; 
-  void* newval = (int)atomic ^ val;
-  memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  return tmp;
-  // return g_atomic_pointer_xor ((volatile gpointer *) atomic, val);
+  return g_atomic_pointer_xor ((volatile gpointer *) atomic, val);
 }
 
-// #elif defined (G_PLATFORM_WIN32)
-
-// #include <windows.h>
-// #if !defined(_M_AMD64) && !defined (_M_IA64) && !defined(_M_X64) && !(defined _MSC_VER && _MSC_VER <= 1200)
-// #define InterlockedAnd _InterlockedAnd
-// #define InterlockedOr _InterlockedOr
-// #define InterlockedXor _InterlockedXor
-// #endif
-
-// #if !defined (_MSC_VER) || _MSC_VER <= 1200
-// #include "gmessages.h"
-// /* Inlined versions for older compiler */
-// static LONG
-// _gInterlockedAnd (volatile guint *atomic,
-//                   guint           val)
-// {
-//   LONG i, j;
-
-//   j = *atomic;
-//   do {
-//     i = j;
-//     j = InterlockedCompareExchange(atomic, i & val, i);
-//   } while (i != j);
-
-//   return j;
-// }
-// #define InterlockedAnd(a,b) _gInterlockedAnd(a,b)
-// static LONG
-// _gInterlockedOr (volatile guint *atomic,
-//                  guint           val)
-// {
-//   LONG i, j;
-
-//   j = *atomic;
-//   do {
-//     i = j;
-//     j = InterlockedCompareExchange(atomic, i | val, i);
-//   } while (i != j);
-
-//   return j;
-// }
-// #define InterlockedOr(a,b) _gInterlockedOr(a,b)
-// static LONG
-// _gInterlockedXor (volatile guint *atomic,
-//                   guint           val)
-// {
-//   LONG i, j;
-
-//   j = *atomic;
-//   do {
-//     i = j;
-//     j = InterlockedCompareExchange(atomic, i ^ val, i);
-//   } while (i != j);
-
-//   return j;
-// }
-// #define InterlockedXor(a,b) _gInterlockedXor(a,b)
-// #endif
-
-// /*
-//  * http://msdn.microsoft.com/en-us/library/ms684122(v=vs.85).aspx
-//  */
-// gint
-// (g_atomic_int_get) (const volatile gint *atomic)
-// {
-//   MemoryBarrier ();
-//   return *atomic;
-// }
-
-// void
-// (g_atomic_int_set) (volatile gint *atomic,
-//                     gint           newval)
-// {
-//   *atomic = newval;
-//   MemoryBarrier ();
-// }
-
-// void
-// (g_atomic_int_inc) (volatile gint *atomic)
-// {
-//   InterlockedIncrement (atomic);
-// }
-
-// gboolean
-// (g_atomic_int_dec_and_test) (volatile gint *atomic)
-// {
-//   return InterlockedDecrement (atomic) == 0;
-// }
-
-// gboolean
-// (g_atomic_int_compare_and_exchange) (volatile gint *atomic,
-//                                      gint           oldval,
-//                                      gint           newval)
-// {
-//   return InterlockedCompareExchange (atomic, newval, oldval) == oldval;
-// }
-
-// gint
-// (g_atomic_int_add) (volatile gint *atomic,
-//                     gint           val)
-// {
-//   return InterlockedExchangeAdd (atomic, val);
-// }
-
-// guint
-// (g_atomic_int_and) (volatile guint *atomic,
-//                     guint           val)
-// {
-//   return InterlockedAnd (atomic, val);
-// }
-
-// guint
-// (g_atomic_int_or) (volatile guint *atomic,
-//                    guint           val)
-// {
-//   return InterlockedOr (atomic, val);
-// }
-
-// guint
-// (g_atomic_int_xor) (volatile guint *atomic,
-//                     guint           val)
-// {
-//   return InterlockedXor (atomic, val);
-// }
-
-
-// gpointer
-// (g_atomic_pointer_get) (const volatile void *atomic)
-// {
-//   const volatile gpointer *ptr = atomic;
-
-//   MemoryBarrier ();
-//   return *ptr;
-// }
-
-// void
-// (g_atomic_pointer_set) (volatile void *atomic,
-//                         gpointer       newval)
-// {
-//   volatile gpointer *ptr = atomic;
-
-//   *ptr = newval;
-//   MemoryBarrier ();
-// }
-
-// gboolean
-// (g_atomic_pointer_compare_and_exchange) (volatile void *atomic,
-//                                          gpointer       oldval,
-//                                          gpointer       newval)
-// {
-//   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//   return InterlockedCompareExchangePointer (atomic, newval, oldval) == oldval;
-// }
-
-// gssize
-// (g_atomic_pointer_add) (volatile void *atomic,
-//                         gssize         val)
-// {
-// #if GLIB_SIZEOF_VOID_P == 8
-//   return InterlockedExchangeAdd64 (atomic, val);
-// #else
-//   return InterlockedExchangeAdd (atomic, val);
-// #endif
-// }
-
-// gsize
-// (g_atomic_pointer_and) (volatile void *atomic,
-//                         gsize          val)
-// {
-// #if GLIB_SIZEOF_VOID_P == 8
-//   return InterlockedAnd64 (atomic, val);
-// #else
-//   return InterlockedAnd (atomic, val);
-// #endif
-// }
-
-// gsize
-// (g_atomic_pointer_or) (volatile void *atomic,
-//                        gsize          val)
-// {
-// #if GLIB_SIZEOF_VOID_P == 8
-//   return InterlockedOr64 (atomic, val);
-// #else
-//   return InterlockedOr (atomic, val);
-// #endif
-// }
-
-// gsize
-// (g_atomic_pointer_xor) (volatile void *atomic,
-//                         gsize          val)
-// {
-// #if GLIB_SIZEOF_VOID_P == 8
-//   return InterlockedXor64 (atomic, val);
-// #else
-//   return InterlockedXor (atomic, val);
-// #endif
-// }
-// #else
-
-// /* This error occurs when ./configure decided that we should be capable
-//  * of lock-free atomics but we find at compile-time that we are not.
-//  */
-// #error G_ATOMIC_LOCK_FREE defined, but incapable of lock-free atomics.
-
-// #endif /* defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) */
-
-// #else /* G_ATOMIC_LOCK_FREE */
-
-// /* We are not permitted to call into any GLib functions from here, so we
-//  * can not use GMutex.
-//  *
-//  * Fortunately, we already take care of the Windows case above, and all
-//  * non-Windows platforms on which glib runs have pthreads.  Use those.
-//  */
-// #include <pthread.h>
-
-// static pthread_mutex_t g_atomic_lock = PTHREAD_MUTEX_INITIALIZER;
-
-// gint
-// (g_atomic_int_get) (const volatile gint *atomic)
-// {
-//   gint value;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   value = *atomic;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return value;
-// }
-
-// void
-// (g_atomic_int_set) (volatile gint *atomic,
-//                     gint           value)
-// {
-//   pthread_mutex_lock (&g_atomic_lock);
-//   *atomic = value;
-//   pthread_mutex_unlock (&g_atomic_lock);
-// }
-
-// void
-// (g_atomic_int_inc) (volatile gint *atomic)
-// {
-//   pthread_mutex_lock (&g_atomic_lock);
-//   (*atomic)++;
-//   pthread_mutex_unlock (&g_atomic_lock);
-// }
-
-// gboolean
-// (g_atomic_int_dec_and_test) (volatile gint *atomic)
-// {
-//   gboolean is_zero;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   is_zero = --(*atomic) == 0;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return is_zero;
-// }
-
-// gboolean
-// (g_atomic_int_compare_and_exchange) (volatile gint *atomic,
-//                                      gint           oldval,
-//                                      gint           newval)
-// {
-//   gboolean success;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-
-//   if ((success = (*atomic == oldval)))
-//     *atomic = newval;
-
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return success;
-// }
-
-// gint
-// (g_atomic_int_add) (volatile gint *atomic,
-//                     gint           val)
-// {
-//   gint oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *atomic;
-//   *atomic = oldval + val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// guint
-// (g_atomic_int_and) (volatile guint *atomic,
-//                     guint           val)
-// {
-//   guint oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *atomic;
-//   *atomic = oldval & val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// guint
-// (g_atomic_int_or) (volatile guint *atomic,
-//                    guint           val)
-// {
-//   guint oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *atomic;
-//   *atomic = oldval | val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// guint
-// (g_atomic_int_xor) (volatile guint *atomic,
-//                     guint           val)
-// {
-//   guint oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *atomic;
-//   *atomic = oldval ^ val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-
-// gpointer
-// (g_atomic_pointer_get) (const volatile void *atomic)
-// {
-//   const volatile gpointer *ptr = atomic;
-//   gpointer value;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   value = *ptr;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return value;
-// }
-
-// void
-// (g_atomic_pointer_set) (volatile void *atomic,
-//                         gpointer       newval)
-// {
-//   volatile gpointer *ptr = atomic;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   *ptr = newval;
-//   pthread_mutex_unlock (&g_atomic_lock);
-// }
-
-// gboolean
-// (g_atomic_pointer_compare_and_exchange) (volatile void *atomic,
-//                                          gpointer       oldval,
-//                                          gpointer       newval)
-// {
-//   volatile gpointer *ptr = atomic;
-//   gboolean success;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-
-//   if ((success = (*ptr == oldval)))
-//     *ptr = newval;
-
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return success;
-// }
-
-// gssize
-// (g_atomic_pointer_add) (volatile void *atomic,
-//                         gssize         val)
-// {
-//   volatile gssize *ptr = atomic;
-//   gssize oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *ptr;
-//   *ptr = oldval + val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// gsize
-// (g_atomic_pointer_and) (volatile void *atomic,
-//                         gsize          val)
-// {
-//   volatile gsize *ptr = atomic;
-//   gsize oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *ptr;
-//   *ptr = oldval & val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// gsize
-// (g_atomic_pointer_or) (volatile void *atomic,
-//                        gsize          val)
-// {
-//   volatile gsize *ptr = atomic;
-//   gsize oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *ptr;
-//   *ptr = oldval | val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// gsize
-// (g_atomic_pointer_xor) (volatile void *atomic,
-//                         gsize          val)
-// {
-//   volatile gsize *ptr = atomic;
-//   gsize oldval;
-
-//   pthread_mutex_lock (&g_atomic_lock);
-//   oldval = *ptr;
-//   *ptr = oldval ^ val;
-//   pthread_mutex_unlock (&g_atomic_lock);
-
-//   return oldval;
-// }
-
-// #endif
+#elif defined (G_PLATFORM_WIN32)
+
+#include <windows.h>
+#if !defined(_M_AMD64) && !defined (_M_IA64) && !defined(_M_X64) && !(defined _MSC_VER && _MSC_VER <= 1200)
+#define InterlockedAnd _InterlockedAnd
+#define InterlockedOr _InterlockedOr
+#define InterlockedXor _InterlockedXor
+#endif
+
+#if !defined (_MSC_VER) || _MSC_VER <= 1200
+#include "gmessages.h"
+/* Inlined versions for older compiler */
+static LONG
+_gInterlockedAnd (volatile guint *atomic,
+                  guint           val)
+{
+  LONG i, j;
+
+  j = *atomic;
+  do {
+    i = j;
+    j = InterlockedCompareExchange(atomic, i & val, i);
+  } while (i != j);
+
+  return j;
+}
+#define InterlockedAnd(a,b) _gInterlockedAnd(a,b)
+static LONG
+_gInterlockedOr (volatile guint *atomic,
+                 guint           val)
+{
+  LONG i, j;
+
+  j = *atomic;
+  do {
+    i = j;
+    j = InterlockedCompareExchange(atomic, i | val, i);
+  } while (i != j);
+
+  return j;
+}
+#define InterlockedOr(a,b) _gInterlockedOr(a,b)
+static LONG
+_gInterlockedXor (volatile guint *atomic,
+                  guint           val)
+{
+  LONG i, j;
+
+  j = *atomic;
+  do {
+    i = j;
+    j = InterlockedCompareExchange(atomic, i ^ val, i);
+  } while (i != j);
+
+  return j;
+}
+#define InterlockedXor(a,b) _gInterlockedXor(a,b)
+#endif
+
+/*
+ * http://msdn.microsoft.com/en-us/library/ms684122(v=vs.85).aspx
+ */
+gint
+(g_atomic_int_get) (const volatile gint *atomic)
+{
+  MemoryBarrier ();
+  return *atomic;
+}
+
+void
+(g_atomic_int_set) (volatile gint *atomic,
+                    gint           newval)
+{
+  *atomic = newval;
+  MemoryBarrier ();
+}
+
+void
+(g_atomic_int_inc) (volatile gint *atomic)
+{
+  InterlockedIncrement (atomic);
+}
+
+gboolean
+(g_atomic_int_dec_and_test) (volatile gint *atomic)
+{
+  return InterlockedDecrement (atomic) == 0;
+}
+
+gboolean
+(g_atomic_int_compare_and_exchange) (volatile gint *atomic,
+                                     gint           oldval,
+                                     gint           newval)
+{
+  return InterlockedCompareExchange (atomic, newval, oldval) == oldval;
+}
+
+gint
+(g_atomic_int_add) (volatile gint *atomic,
+                    gint           val)
+{
+  return InterlockedExchangeAdd (atomic, val);
+}
+
+guint
+(g_atomic_int_and) (volatile guint *atomic,
+                    guint           val)
+{
+  return InterlockedAnd (atomic, val);
+}
+
+guint
+(g_atomic_int_or) (volatile guint *atomic,
+                   guint           val)
+{
+  return InterlockedOr (atomic, val);
+}
+
+guint
+(g_atomic_int_xor) (volatile guint *atomic,
+                    guint           val)
+{
+  return InterlockedXor (atomic, val);
+}
+
+
+gpointer
+(g_atomic_pointer_get) (const volatile void *atomic)
+{
+  const volatile gpointer *ptr = atomic;
+
+  MemoryBarrier ();
+  return *ptr;
+}
+
+void
+(g_atomic_pointer_set) (volatile void *atomic,
+                        gpointer       newval)
+{
+  volatile gpointer *ptr = atomic;
+
+  *ptr = newval;
+  MemoryBarrier ();
+}
+
+gboolean
+(g_atomic_pointer_compare_and_exchange) (volatile void *atomic,
+                                         gpointer       oldval,
+                                         gpointer       newval)
+{
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  return InterlockedCompareExchangePointer (atomic, newval, oldval) == oldval;
+}
+
+gssize
+(g_atomic_pointer_add) (volatile void *atomic,
+                        gssize         val)
+{
+#if GLIB_SIZEOF_VOID_P == 8
+  return InterlockedExchangeAdd64 (atomic, val);
+#else
+  return InterlockedExchangeAdd (atomic, val);
+#endif
+}
+
+gsize
+(g_atomic_pointer_and) (volatile void *atomic,
+                        gsize          val)
+{
+#if GLIB_SIZEOF_VOID_P == 8
+  return InterlockedAnd64 (atomic, val);
+#else
+  return InterlockedAnd (atomic, val);
+#endif
+}
+
+gsize
+(g_atomic_pointer_or) (volatile void *atomic,
+                       gsize          val)
+{
+#if GLIB_SIZEOF_VOID_P == 8
+  return InterlockedOr64 (atomic, val);
+#else
+  return InterlockedOr (atomic, val);
+#endif
+}
+
+gsize
+(g_atomic_pointer_xor) (volatile void *atomic,
+                        gsize          val)
+{
+#if GLIB_SIZEOF_VOID_P == 8
+  return InterlockedXor64 (atomic, val);
+#else
+  return InterlockedXor (atomic, val);
+#endif
+}
+#else
+
+/* This error occurs when ./configure decided that we should be capable
+ * of lock-free atomics but we find at compile-time that we are not.
+ */
+#error G_ATOMIC_LOCK_FREE defined, but incapable of lock-free atomics.
+
+#endif /* defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) */
+
+#else /* G_ATOMIC_LOCK_FREE */
+
+/* We are not permitted to call into any GLib functions from here, so we
+ * can not use GMutex.
+ *
+ * Fortunately, we already take care of the Windows case above, and all
+ * non-Windows platforms on which glib runs have pthreads.  Use those.
+ */
+#include <pthread.h>
+
+static pthread_mutex_t g_atomic_lock = PTHREAD_MUTEX_INITIALIZER;
+
+gint
+(g_atomic_int_get) (const volatile gint *atomic)
+{
+  gint value;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  value = *atomic;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return value;
+}
+
+void
+(g_atomic_int_set) (volatile gint *atomic,
+                    gint           value)
+{
+  pthread_mutex_lock (&g_atomic_lock);
+  *atomic = value;
+  pthread_mutex_unlock (&g_atomic_lock);
+}
+
+void
+(g_atomic_int_inc) (volatile gint *atomic)
+{
+  pthread_mutex_lock (&g_atomic_lock);
+  (*atomic)++;
+  pthread_mutex_unlock (&g_atomic_lock);
+}
+
+gboolean
+(g_atomic_int_dec_and_test) (volatile gint *atomic)
+{
+  gboolean is_zero;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  is_zero = --(*atomic) == 0;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return is_zero;
+}
+
+gboolean
+(g_atomic_int_compare_and_exchange) (volatile gint *atomic,
+                                     gint           oldval,
+                                     gint           newval)
+{
+  gboolean success;
+
+  pthread_mutex_lock (&g_atomic_lock);
+
+  if ((success = (*atomic == oldval)))
+    *atomic = newval;
+
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return success;
+}
+
+gint
+(g_atomic_int_add) (volatile gint *atomic,
+                    gint           val)
+{
+  gint oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *atomic;
+  *atomic = oldval + val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+guint
+(g_atomic_int_and) (volatile guint *atomic,
+                    guint           val)
+{
+  guint oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *atomic;
+  *atomic = oldval & val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+guint
+(g_atomic_int_or) (volatile guint *atomic,
+                   guint           val)
+{
+  guint oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *atomic;
+  *atomic = oldval | val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+guint
+(g_atomic_int_xor) (volatile guint *atomic,
+                    guint           val)
+{
+  guint oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *atomic;
+  *atomic = oldval ^ val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+
+gpointer
+(g_atomic_pointer_get) (const volatile void *atomic)
+{
+  const volatile gpointer *ptr = atomic;
+  gpointer value;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  value = *ptr;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return value;
+}
+
+void
+(g_atomic_pointer_set) (volatile void *atomic,
+                        gpointer       newval)
+{
+  volatile gpointer *ptr = atomic;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  *ptr = newval;
+  pthread_mutex_unlock (&g_atomic_lock);
+}
+
+gboolean
+(g_atomic_pointer_compare_and_exchange) (volatile void *atomic,
+                                         gpointer       oldval,
+                                         gpointer       newval)
+{
+  volatile gpointer *ptr = atomic;
+  gboolean success;
+
+  pthread_mutex_lock (&g_atomic_lock);
+
+  if ((success = (*ptr == oldval)))
+    *ptr = newval;
+
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return success;
+}
+
+gssize
+(g_atomic_pointer_add) (volatile void *atomic,
+                        gssize         val)
+{
+  volatile gssize *ptr = atomic;
+  gssize oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *ptr;
+  *ptr = oldval + val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+gsize
+(g_atomic_pointer_and) (volatile void *atomic,
+                        gsize          val)
+{
+  volatile gsize *ptr = atomic;
+  gsize oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *ptr;
+  *ptr = oldval & val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+gsize
+(g_atomic_pointer_or) (volatile void *atomic,
+                       gsize          val)
+{
+  volatile gsize *ptr = atomic;
+  gsize oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *ptr;
+  *ptr = oldval | val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+gsize
+(g_atomic_pointer_xor) (volatile void *atomic,
+                        gsize          val)
+{
+  volatile gsize *ptr = atomic;
+  gsize oldval;
+
+  pthread_mutex_lock (&g_atomic_lock);
+  oldval = *ptr;
+  *ptr = oldval ^ val;
+  pthread_mutex_unlock (&g_atomic_lock);
+
+  return oldval;
+}
+
+#endif
 
 /**
  * g_atomic_int_exchange_and_add:

@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <signal.h>
+#include <stdbool.h>
 
 #include <gobject/gobject.h>
 #include <gobject/gtype-private.h>
@@ -3016,23 +3017,53 @@ static guint
 object_floating_flag_handler (GObject        *object,
                               gint            job)
 {
+  bool test = false;
   switch (job)
     {
       gpointer oldvalue;
     case +1:    /* force floating if possible */
       do
+      {
+#ifdef __EMSCRIPTEN__
+        oldvalue = object->qdata;
+        if (object->qdata == oldvalue) {
+          object->qdata = (gpointer) ((gsize) oldvalue | OBJECT_FLOATING_FLAG);
+          test = true;
+        } else {
+          test = false;
+        }
+      } while (!test);
+#else
         oldvalue = g_atomic_pointer_get (&object->qdata);
-      while (!g_atomic_pointer_compare_and_exchange ((void**) &object->qdata, oldvalue,
+      } while (!g_atomic_pointer_compare_and_exchange ((void**) &object->qdata, oldvalue,
                                                      (gpointer) ((gsize) oldvalue | OBJECT_FLOATING_FLAG)));
+#endif
       return (gsize) oldvalue & OBJECT_FLOATING_FLAG;
     case -1:    /* sink if possible */
       do
+      {
+#ifdef __EMSCRIPTEN__
+        oldvalue = object->qdata;
+        oldvalue = object->qdata;
+        if (object->qdata == oldvalue) {
+          object->qdata = (gpointer) ((gsize) oldvalue & ~(gsize) OBJECT_FLOATING_FLAG);
+          test = true;
+        } else {
+          test = false;
+        }
+      } while (!test);
+#else
         oldvalue = g_atomic_pointer_get (&object->qdata);
-      while (!g_atomic_pointer_compare_and_exchange ((void**) &object->qdata, oldvalue,
+      } while (!g_atomic_pointer_compare_and_exchange ((void**) &object->qdata, oldvalue,
                                                      (gpointer) ((gsize) oldvalue & ~(gsize) OBJECT_FLOATING_FLAG)));
+#endif                                                    
       return (gsize) oldvalue & OBJECT_FLOATING_FLAG;
     default:    /* check floating */
+#ifdef __EMSCRIPTEN__
+      return 0 != ((gsize) object->qdata & OBJECT_FLOATING_FLAG);
+#else
       return 0 != ((gsize) g_atomic_pointer_get (&object->qdata) & OBJECT_FLOATING_FLAG);
+#endif
     }
 }
 

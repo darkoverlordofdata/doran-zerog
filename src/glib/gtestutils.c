@@ -53,6 +53,18 @@
 #include <glib/gslice.h>
 #include <glib/gspawn.h>
 // #include <glib/glib-private.h>
+// missing forward decls
+void g_abort (void);
+GString *
+g_string_append_len (GString     *string,
+                     const gchar *val,
+                     gssize       len);
+
+GString *
+g_string_overwrite_len (GString *string,
+                        gsize pos,
+                        const gchar *val,
+                        gssize len);
 
 
 // /**
@@ -3298,32 +3310,32 @@ g_strcmp0 (const char     *str1,
 //   g_free (process_id);
 // }
 
-// static void
-// gstring_overwrite_int (GString *gstring,
-//                        guint    pos,
-//                        guint32  vuint)
-// {
-//   vuint = g_htonl (vuint);
-//   g_string_overwrite_len (gstring, pos, (const gchar*) &vuint, 4);
-// }
+static void
+gstring_overwrite_int (GString *gstring,
+                       guint    pos,
+                       guint32  vuint)
+{
+  vuint = g_htonl (vuint);
+  g_string_overwrite_len (gstring, pos, (const gchar*) &vuint, 4);
+}
 
-// static void
-// gstring_append_int (GString *gstring,
-//                     guint32  vuint)
-// {
-//   vuint = g_htonl (vuint);
-//   g_string_append_len (gstring, (const gchar*) &vuint, 4);
-// }
+static void
+gstring_append_int (GString *gstring,
+                    guint32  vuint)
+{
+  vuint = g_htonl (vuint);
+  g_string_append_len (gstring, (const gchar*) &vuint, 4);
+}
 
-// static void
-// gstring_append_double (GString *gstring,
-//                        double   vdouble)
-// {
-//   union { double vdouble; guint64 vuint64; } u;
-//   u.vdouble = vdouble;
-//   u.vuint64 = GUINT64_TO_BE (u.vuint64);
-//   g_string_append_len (gstring, (const gchar*) &u.vuint64, 8);
-// }
+static void
+gstring_append_double (GString *gstring,
+                       double   vdouble)
+{
+  union { double vdouble; guint64 vuint64; } u;
+  u.vdouble = vdouble;
+  u.vuint64 = GUINT64_TO_BE (u.vuint64);
+  g_string_append_len (gstring, (const gchar*) &u.vuint64, 8);
+}
 
 static guint8*
 g_test_log_dump (GTestLogMsg *msg,

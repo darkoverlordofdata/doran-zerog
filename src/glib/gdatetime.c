@@ -173,6 +173,37 @@ static const guint16 days_in_year[2][13] =
   {  0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 };
 
+#ifdef __EMSCRIPTEN__ 
+/**
+ * C_:
+ * No GetText I18n 
+ * @str: (nullable): the string to duplicate
+ *
+ * Duplicates a string. If @str is %NULL it returns %NULL.
+ * The returned string should be freed with g_free()
+ * when no longer needed.
+ *
+ * Returns: a newly-allocated copy of @str
+ */
+gchar*
+C_ (const gchar *context, const gchar *str)
+{
+  gchar *new_str;
+  gsize length;
+
+  if (str)
+    {
+      length = strlen (str) + 1;
+      new_str = g_new (char, length);
+      memcpy (new_str, str, length);
+    }
+  else
+    new_str = NULL;
+
+  return new_str;
+}
+#endif
+
 #ifdef HAVE_LANGINFO_TIME
 
 #define GET_AMPM(d) ((g_date_time_get_hour (d) < 12) ? \

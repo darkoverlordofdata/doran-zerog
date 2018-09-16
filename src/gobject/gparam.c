@@ -255,7 +255,11 @@ g_param_spec_sink (GParamSpec *pspec)
   gsize oldvalue;
   g_return_if_fail (G_IS_PARAM_SPEC (pspec));
 
+#ifdef __EMSCRIPTEN__
+  oldvalue = (int)pspec->qdata & (~(gsize)PARAM_FLOATING_FLAG);
+#else
   oldvalue = g_atomic_pointer_and (&pspec->qdata, ~(gsize)PARAM_FLOATING_FLAG);
+#endif
   if (oldvalue & PARAM_FLOATING_FLAG)
     g_param_spec_unref (pspec);
 }
@@ -275,7 +279,11 @@ g_param_spec_ref_sink (GParamSpec *pspec)
   gsize oldvalue;
   g_return_val_if_fail (G_IS_PARAM_SPEC (pspec), NULL);
 
+#ifdef __EMSCRIPTEN__
+  oldvalue = (int)pspec->qdata & (~(gsize)PARAM_FLOATING_FLAG);
+#else
   oldvalue = g_atomic_pointer_and (&pspec->qdata, ~(gsize)PARAM_FLOATING_FLAG);
+#endif
   if (!(oldvalue & PARAM_FLOATING_FLAG))
     g_param_spec_ref (pspec);
 
