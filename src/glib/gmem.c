@@ -28,7 +28,7 @@
 
 #include <config.h>
 
-#include <glib/gmem.h>>
+#include <glib/gmem.h>
 
 #include <stdlib.h>
 #include <string.h>

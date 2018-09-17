@@ -18,10 +18,8 @@
  */
 
 #include <config.h>
-
+#include <string.h>
 #include <glib/gatomic.h>
-
-void * memcpy ( void * destination, const void * source, size_t num );
 
 /**
  * SECTION:atomic_operations
@@ -123,8 +121,11 @@ void * memcpy ( void * destination, const void * source, size_t num );
 gint
 (g_atomic_int_get) (const volatile gint *atomic)
 {
-  return atomic;
-  // return g_atomic_int_get (atomic);
+#if __EMSCRIPTEN__
+  return *atomic;
+#else
+  return g_atomic_int_get (atomic);
+#endif
 }
 
 /**
@@ -143,8 +144,11 @@ void
 (g_atomic_int_set) (volatile gint *atomic,
                     gint           newval)
 {
+#if __EMSCRIPTEN__
   *atomic = newval;
-  // g_atomic_int_set (atomic, newval);
+#else
+  g_atomic_int_set (atomic, newval);
+#endif
 }
 
 /**
@@ -162,8 +166,11 @@ void
 void
 (g_atomic_int_inc) (volatile gint *atomic)
 {
+#if __EMSCRIPTEN__
   *atomic += 1;
-  // g_atomic_int_inc (atomic);
+#else
+  g_atomic_int_inc (atomic);
+#endif
 }
 
 /**
@@ -184,9 +191,12 @@ void
 gboolean
 (g_atomic_int_dec_and_test) (volatile gint *atomic)
 {
+#if __EMSCRIPTEN__
   *atomic -= 1; 
   return (*atomic == 0);
-  // return g_atomic_int_dec_and_test (atomic);
+#else
+  return g_atomic_int_dec_and_test (atomic);
+#endif
 }
 
 /**
@@ -214,13 +224,16 @@ gboolean
                                      gint           oldval,
                                      gint           newval)
 {
+#if __EMSCRIPTEN__
   if (*atomic == oldval) 
   { 
     *atomic = newval; 
     return TRUE; 
   } 
   else return FALSE;
-  // return g_atomic_int_compare_and_exchange (atomic, oldval, newval);
+#else
+  return g_atomic_int_compare_and_exchange (atomic, oldval, newval);
+#endif
 }
 
 /**
@@ -246,10 +259,13 @@ gint
 (g_atomic_int_add) (volatile gint *atomic,
                     gint           val)
 {
+#if __EMSCRIPTEN__
   gint tmp = *atomic; 
   *atomic += val; 
   return tmp;
-  // return g_atomic_int_add (atomic, val);
+#else
+  return g_atomic_int_add (atomic, val);
+#endif
 }
 
 /**
@@ -273,10 +289,13 @@ guint
 (g_atomic_int_and) (volatile guint *atomic,
                     guint           val)
 {
+#if __EMSCRIPTEN__
   guint tmp = *atomic; 
   *atomic &= val; 
   return tmp;
-  // return g_atomic_int_and (atomic, val);
+#else
+  return g_atomic_int_and (atomic, val);
+#endif
 }
 
 /**
@@ -300,10 +319,13 @@ guint
 (g_atomic_int_or) (volatile guint *atomic,
                    guint           val)
 {
+#if __EMSCRIPTEN__
   guint tmp = *atomic; 
   *atomic |= val; 
   return tmp;
-  // return g_atomic_int_or (atomic, val);
+#else
+  return g_atomic_int_or (atomic, val);
+#endif
 }
 
 /**
@@ -327,10 +349,13 @@ guint
 (g_atomic_int_xor) (volatile guint *atomic,
                     guint           val)
 {
+#if __EMSCRIPTEN__
   guint tmp = *atomic; 
   *atomic ^= val; 
   return tmp;
-  // return g_atomic_int_xor (atomic, val);
+#else
+  return g_atomic_int_xor (atomic, val);
+#endif
 }
 
 
@@ -350,8 +375,11 @@ guint
 gpointer
 (g_atomic_pointer_get) (const volatile void *atomic)
 {
+#if __EMSCRIPTEN__
   return atomic;
-  // return g_atomic_pointer_get ((const volatile gpointer *) atomic);
+#else
+  return g_atomic_pointer_get ((const volatile gpointer *) atomic);
+#endif
 }
 
 /**
@@ -370,8 +398,11 @@ void
 (g_atomic_pointer_set) (volatile void *atomic,
                         gpointer       newval)
 {
+#if __EMSCRIPTEN__
   memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
-  // g_atomic_pointer_set ((volatile gpointer *) atomic, newval);
+#else
+  g_atomic_pointer_set ((volatile gpointer *) atomic, newval);
+#endif
 }
 
 /**
@@ -399,14 +430,17 @@ gboolean
                                          gpointer       oldval,
                                          gpointer       newval)
 {
+#if __EMSCRIPTEN__
   if (atomic == oldval) 
   { 
     memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
     return TRUE; 
   } 
   else return FALSE;
-  // return g_atomic_pointer_compare_and_exchange ((volatile gpointer *) atomic,
-  //                                               oldval, newval);
+#else
+  return g_atomic_pointer_compare_and_exchange ((volatile gpointer *) atomic,
+                                                oldval, newval);
+#endif                                              
 }
 
 /**
@@ -429,11 +463,14 @@ gssize
 (g_atomic_pointer_add) (volatile void *atomic,
                         gssize         val)
 {
+#if __EMSCRIPTEN__
   void* tmp = atomic; 
   void* newval = atomic+val;
   memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
   return tmp;
-  // return g_atomic_pointer_add ((volatile gpointer *) atomic, val);
+#else
+  return g_atomic_pointer_add ((volatile gpointer *) atomic, val);
+#endif
 }
 
 /**
@@ -457,11 +494,15 @@ gsize
 (g_atomic_pointer_and) (volatile void *atomic,
                         gsize          val)
 {
+#if __EMSCRIPTEN__
   void* tmp = atomic; 
   void* newval = (int)atomic & val;
   memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
   return tmp;
-  // return g_atomic_pointer_and ((volatile gpointer *) atomic, val);
+#else
+  return g_atomic_pointer_and ((volatile gpointer *) atomic, val);
+#endif
+
 }
 
 /**
@@ -485,11 +526,14 @@ gsize
 (g_atomic_pointer_or) (volatile void *atomic,
                        gsize          val)
 {
+#if __EMSCRIPTEN__
   void* tmp = atomic; 
   void* newval = (int)atomic | val;
   memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
   return tmp;
-  // return g_atomic_pointer_or ((volatile gpointer *) atomic, val);
+#else
+  return g_atomic_pointer_or ((volatile gpointer *) atomic, val);
+#endif
 }
 
 /**
@@ -513,11 +557,14 @@ gsize
 (g_atomic_pointer_xor) (volatile void *atomic,
                         gsize          val)
 {
+#if __EMSCRIPTEN__
   void* tmp = atomic; 
   void* newval = (int)atomic ^ val;
   memcpy(atomic, newval, GLIB_SIZEOF_VOID_P);
   return tmp;
-  // return g_atomic_pointer_xor ((volatile gpointer *) atomic, val);
+#else
+  return g_atomic_pointer_xor ((volatile gpointer *) atomic, val);
+#endif
 }
 
 // #elif defined (G_PLATFORM_WIN32)
@@ -970,9 +1017,9 @@ gsize
  * Since: 2.4
  * Deprecated: 2.30: Use g_atomic_int_add() instead.
  **/
-gint
-g_atomic_int_exchange_and_add (volatile gint *atomic,
-                               gint           val)
-{
-  return (g_atomic_int_add) (atomic, val);
-}
+// gint
+// g_atomic_int_exchange_and_add (volatile gint *atomic,
+//                                gint           val)
+// {
+//   return (g_atomic_int_add) (atomic, val);
+// }

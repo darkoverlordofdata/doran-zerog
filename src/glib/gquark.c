@@ -324,7 +324,6 @@ quark_intern_string_locked (const gchar   *string,
     return NULL;
   // G_LOCK (quark_global);
   quark = quark_from_string (string, duplicate);
-  // if (quark == 4) quarks[4] = "Frodo";
   result = quarks[quark];
   // G_UNLOCK (quark_global);
 
