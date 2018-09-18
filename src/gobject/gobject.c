@@ -24,6 +24,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <gobject/gobject.h>
 #include <gobject/gtype-private.h>
@@ -2042,6 +2043,7 @@ g_object_new_with_properties (GType          object_type,
   else
     object = g_object_new_internal (class, NULL, 0);
 
+
   if (unref_class != NULL)
     g_type_class_unref (unref_class);
 
@@ -2161,7 +2163,6 @@ g_object_new_valist (GType        object_type,
 
       do
         {
-          printf("g_object_new_valist: %s\n", name);
           gchar *error = NULL;
           GParamSpec *pspec;
 
@@ -2202,8 +2203,6 @@ g_object_new_valist (GType        object_type,
       // gpointer *value = (gpointer)&(params[n_params].value->data[0].v_int);
       gpointer *value = (gpointer)&(params[n_params].value->data[0].v_int);
       
-      printf("g_object_new_valist: %d - %d\n", n_params, value);
-
       object = g_object_new_internal (class, params, n_params);
 
       while (n_params--)

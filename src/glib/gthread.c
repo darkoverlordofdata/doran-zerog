@@ -1,8 +1,8 @@
 /**
- * Null methods
- * All methods do nothing
- * Have no side effects
- * Return input parameters without trasformation
+ * Null methods:
+ *  do nothing
+ *  have no side effects
+ *  return input parameters without trasformation
  * 
  */
 
@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <locale.h>
 #include <string.h>
 #include <locale.h>
@@ -25,25 +26,68 @@ typedef struct _GThread         GThread;
 typedef struct _GRecMutex       GRecMutex;
 
 /**
- * These can't be defined where glib/thread.h is included
+ * g_once_init_enter:
+ * @location: (not nullable): location of a static initializable variable
+ *    containing 0
+ *
+ * Function to be called when starting a critical initialization
+ * section. The argument @location must point to a static
+ * 0-initialized variable that will be set to a value other than 0 at
+ * the end of the initialization section. In combination with
+ * g_once_init_leave() and the unique address @value_location, it can
+ * be ensured that an initialization section will be executed only once
+ * during a program's life time, and that concurrent threads are
+ * blocked until initialization completed. To be used in constructs
+ * like this:
+ *
+ * |[<!-- language="C" --> 
+ *   static gsize initialization_value = 0;
+ *
+ *   if (g_once_init_enter (&initialization_value))
+ *     {
+ *       gsize setup_value = 42; // initialization code here
+ *
+ *       g_once_init_leave (&initialization_value, setup_value);
+ *     }
+ *
+ *   // use initialization_value here
+ * ]|
+ *
+ * Returns: %TRUE if the initialization section should be entered,
+ *     %FALSE and blocks otherwise
+ *
+ * Since: 2.14
  */
-
-#define g_once_init_enter_impl(x) ((*(x) == 0) ? TRUE : FALSE)
-#define g_once_init_leave_impl(x,y) (*(x) = y)
-
 gboolean
-g_once_init_enter(gsize *initialised)
+(g_once_init_enter) (gsize *location)
 {
-    return g_once_init_enter_impl(initialised);
+    return (*location == 0) ? true : false;
 }
 
-gboolean
-g_once_init_leave(  
-    gsize  *location,
-    gsize   result)
+
+/**
+ * g_once_init_leave:
+ * @location: (not nullable): location of a static initializable variable
+ *    containing 0
+ * @result: new non-0 value for *@value_location
+ *
+ * Counterpart to g_once_init_enter(). Expects a location of a static
+ * 0-initialized initialization variable, and an initialization value
+ * other than 0. Sets the variable to the initialization value, and
+ * releases concurrent threads blocking in g_once_init_enter() on this
+ * initialization variable.
+ *
+ * Since: 2.14
+ */
+void
+(g_once_init_leave) (gsize *location,
+                     gsize          result)
 {
-    return g_once_init_leave_impl(location, result);
+    *location = result;
 }
+
+
+
 
 /**
  * g_rec_mutex_init:

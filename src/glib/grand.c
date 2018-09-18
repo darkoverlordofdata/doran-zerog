@@ -58,8 +58,6 @@
 #include <stdlib.h>
 #include <process.h> /* For getpid() */
 #endif
-#define g_once_init_enter(x) ((*(x) == 0) ? TRUE : FALSE)
-#define g_once_init_leave(x,y) (*(x) = y)
 
 /**
  * SECTION:random_numbers

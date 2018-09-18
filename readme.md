@@ -20,3 +20,7 @@ No RegEx, its not portable, depending on an external lib.
 No Variant data type, nothing that relies on Variant.
 No dependencies, just support for Vala's oop syntax 
 
+GObject Requires:
+
+        -s EMULATE_FUNCTION_POINTER_CASTS=1
+        

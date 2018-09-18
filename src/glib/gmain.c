@@ -89,8 +89,6 @@
 #include <glib/gtestutils.h>
 #include <glib/gslice.h>
 #include <glib/gthread.h>
-#define g_once_init_enter(x) ((*(x) == 0) ? TRUE : FALSE)
-#define g_once_init_leave(x,y) (*(x) = y)
 
 
 #ifdef G_OS_WIN32

@@ -116,9 +116,6 @@
 
 #include <glib/glibintl.h>
 
-#define g_once_init_enter(x) ((*(x) == 0) ? TRUE : FALSE)
-#define g_once_init_leave(x,y) (*(x) = y)
-
 GType
 g_flags_register_static (const gchar	   *name,
 			 const GFlagsValue *const_static_values);

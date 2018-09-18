@@ -23,6 +23,7 @@
 
 // #include <../glib/valgrind.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <gobject/gtype.h>
 // #include <gobject/gtype-private.h>
@@ -555,7 +556,6 @@ type_node_fundamental_new_W (GType                 ftype,
   type_flags &= TYPE_FUNDAMENTAL_FLAG_MASK;
   
   node = type_node_any_new_W (NULL, ftype, name, NULL, type_flags);
-  //+++++ return NULL;
   
   finfo = type_node_fundamental_info_I (node);
   finfo->type_flags = type_flags;
@@ -2169,6 +2169,7 @@ type_class_init_Wm (TypeNode   *node,
   for (bnode = node; bnode; bnode = lookup_type_node_I (NODE_PARENT_TYPE (bnode)))
     if (bnode->data->class.class_init_base)
       init_slist = g_slist_prepend (init_slist, (gpointer) bnode->data->class.class_init_base);
+
   for (slist = init_slist; slist; slist = slist->next)
     {
       GBaseInitFunc class_init_base = (GBaseInitFunc) slist->data;
@@ -2239,13 +2240,25 @@ type_class_init_Wm (TypeNode   *node,
   
   // G_WRITE_UNLOCK (&type_rw_lock);
 
+  /**
+   * TODO:
+   * fix funtion pointer cast.
+   * 
+   * this tries to callback to a vala defined function:
+   * 
+   *  static void <custom>_class_init (<Custom>Class * klass);
+   * 
+   * until then, for emscripten, use:
+   * 
+   *  -s EMULATE_FUNCTION_POINTER_CASTS=1
+   */
   if (node->data->class.class_init)
     node->data->class.class_init (class, (gpointer) node->data->class.class_data);
   
   // G_WRITE_LOCK (&type_rw_lock);
   
   g_atomic_int_set (&node->data->class.init_state, IFACE_INIT);
-  
+
   /* finish initializing the interfaces through our holder info.
    * inherited interfaces are already init_state == INITIALIZED, because
    * they either got setup in the above base_init loop, or during
@@ -2920,11 +2933,12 @@ g_type_class_ref (GType type)
   gboolean holds_ref;
   GTypeClass *pclass;
 
+
   /* optimize for common code path */
   node = lookup_type_node_I (type);
   if (!node || !node->is_classed)
     {
-      g_warning ("cannot retrieve class for invalid (unclassed) type '%s'",
+      g_warning ("cannot retrieve class for invalid (unclassed) type '%s'\n",
 		 type_descriptive_name_I (type));
       return NULL;
     }
@@ -2950,7 +2964,6 @@ g_type_class_ref (GType type)
   pclass = ptype ? g_type_class_ref (ptype) : NULL;
 
   // G_WRITE_LOCK (&type_rw_lock);
-
   if (!holds_ref)
     type_data_ref_Wm (node);
 

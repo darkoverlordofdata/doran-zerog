@@ -65,7 +65,7 @@ G_GNUC_EXTENSION typedef unsigned long long guint64;
 #if defined(_WIN64) || defined(_M_X64) || defined(_M_AMD64)
 
 #ifdef __EMSCRIPTEN__
-#define GLIB_SIZEOF_VOID_P sizeof(gpointer)
+#define GLIB_SIZEOF_VOID_P 4
 #else
 #define GLIB_SIZEOF_VOID_P 8
 #endif
