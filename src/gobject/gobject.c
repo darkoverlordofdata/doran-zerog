@@ -1706,7 +1706,6 @@ g_object_new (GType	   object_type,
 {
   GObject *object;
   va_list var_args;
-  
   /* short circuit for calls supplying no properties */
   if (!first_property_name)
     return g_object_new_with_properties (object_type, 0, NULL, NULL);
@@ -2041,8 +2040,9 @@ g_object_new_with_properties (GType          object_type,
         g_value_unset (params[count].value);
     }
   else
+  {
     object = g_object_new_internal (class, NULL, 0);
-
+  }
 
   if (unref_class != NULL)
     g_type_class_unref (unref_class);

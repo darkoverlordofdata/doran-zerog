@@ -24,6 +24,7 @@
 // #include <../glib/valgrind.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <gobject/gtype.h>
 // #include <gobject/gtype-private.h>
@@ -256,7 +257,11 @@ struct _TypeNode
 #define NODE_PARENT_TYPE(node)			(node->supers[1])
 #define NODE_FUNDAMENTAL_TYPE(node)		(node->supers[node->n_supers])
 #define NODE_NAME(node)				(g_quark_to_string (node->qname))
+#ifdef __EMSCRIPTEN__
+#define NODE_REFCOUNT(node)                     ((node)->ref_count)
+#else
 #define NODE_REFCOUNT(node)                     ((guint) g_atomic_int_get ((int *) &(node)->ref_count))
+#endif
 #define	NODE_IS_BOXED(node)			(NODE_FUNDAMENTAL_TYPE (node) == G_TYPE_BOXED)
 #define	NODE_IS_IFACE(node)			(NODE_FUNDAMENTAL_TYPE (node) == G_TYPE_INTERFACE)
 #define	CLASSED_NODE_IFACES_ENTRIES(node)	(&(node)->_prot.iface_entries)
@@ -424,7 +429,11 @@ lookup_type_node_I (GType utype)
 guint
 g_type_get_type_registration_serial (void)
 {
+#ifdef __EMSCRIPTEN__
+  return type_registration_serial;
+#else
   return (guint)g_atomic_int_get ((gint *)&type_registration_serial);
+#endif
 }
 
 static TypeNode*
@@ -524,8 +533,11 @@ type_node_any_new_W (TypeNode             *pnode,
 		       (gpointer) g_quark_to_string (node->qname),
 		       (gpointer) type);
 
+#ifdef __EMSCRIPTEN__
+  type_registration_serial+=1;
+#else
   g_atomic_int_inc ((gint *)&type_registration_serial);
-
+#endif
   return node;
 }
 
@@ -1227,7 +1239,11 @@ type_data_make_W (TypeNode              *node,
   
   g_assert (node->data->common.value_table != NULL); /* paranoid */
 
+#ifdef __EMSCRIPTEN__
+  node->ref_count = 1;
+#else
   g_atomic_int_set ((int *) &node->ref_count, 1);
+#endif
 }
 
 static inline void
@@ -1266,8 +1282,12 @@ type_data_ref_Wm (TypeNode *node)
   else
     {
       g_assert (NODE_REFCOUNT (node) > 0);
-      
+
+#ifdef __EMCRIPTEN__
+      node->ref_count += 1;
+#else      
       g_atomic_int_inc ((int *) &node->ref_count);
+#endif
     }
 }
 
@@ -1275,14 +1295,27 @@ static inline gboolean
 type_data_ref_U (TypeNode *node)
 {
   guint current;
+  bool done = false;
 
   do {
     current = NODE_REFCOUNT (node);
 
     if (current < 1)
       return FALSE;
-  } while (!g_atomic_int_compare_and_exchange ((int *) &node->ref_count, current, current + 1));
 
+#ifdef __EMSCRIPTEN__
+    if (node->ref_count == current) 
+    { 
+      node->ref_count = current+1;
+      done = true; 
+    } 
+#endif
+  } while
+#ifdef __EMSCRIPTEN__
+  (!done);
+#else
+  (!g_atomic_int_compare_and_exchange ((int *) &node->ref_count, current, current + 1));
+#endif
   return TRUE;
 }
 
@@ -1807,6 +1840,7 @@ g_type_create_instance (GType type)
   gint ivar_size;
   guint i;
 
+
   node = lookup_type_node_I (type);
   if (!node || !node->is_instantiatable)
     {
@@ -2141,8 +2175,11 @@ type_class_init_Wm (TypeNode   *node,
   else
     class = g_malloc0 (node->data->class.class_size);
   node->data->class.class = class;
+#ifdef __EMSCRIPTEN__
+  node->data->class.init_state = BASE_CLASS_INIT;
+#else
   g_atomic_int_set (&node->data->class.init_state, BASE_CLASS_INIT);
-  
+#endif  
   if (pclass)
     {
       TypeNode *pnode = lookup_type_node_I (pclass->g_type);
@@ -2180,8 +2217,11 @@ type_class_init_Wm (TypeNode   *node,
   
   // G_WRITE_LOCK (&type_rw_lock);
 
+#ifdef __EMSCRIPTEN__
+  node->data->class.init_state = BASE_IFACE_INIT;
+#else
   g_atomic_int_set (&node->data->class.init_state, BASE_IFACE_INIT);
-  
+#endif  
   /* Before we initialize the class, base initialize all interfaces, either
    * from parent, or through our holder info
    */
@@ -2235,9 +2275,12 @@ type_class_init_Wm (TypeNode   *node,
        */
       i++;
     }
-  
+
+#ifdef __EMSCRIPTEN__
+  node->data->class.init_state = CLASS_INIT;
+#else  
   g_atomic_int_set (&node->data->class.init_state, CLASS_INIT);
-  
+#endif
   // G_WRITE_UNLOCK (&type_rw_lock);
 
   /**
@@ -2253,12 +2296,18 @@ type_class_init_Wm (TypeNode   *node,
    *  -s EMULATE_FUNCTION_POINTER_CASTS=1
    */
   if (node->data->class.class_init)
-    node->data->class.class_init (class, (gpointer) node->data->class.class_data);
-  
+  {
+    printf("before class_init 0x%08x\n", node->data->class.class_init);
+    node->data->class.class_init (class), (gpointer) node->data->class.class_data);
+    printf("after class_init\n");
+  }
   // G_WRITE_LOCK (&type_rw_lock);
   
+#ifdef __EMSCRIPTEN__
+  node->data->class.init_state = IFACE_INIT;
+#else
   g_atomic_int_set (&node->data->class.init_state, IFACE_INIT);
-
+#endif
   /* finish initializing the interfaces through our holder info.
    * inherited interfaces are already init_state == INITIALIZED, because
    * they either got setup in the above base_init loop, or during
@@ -2288,7 +2337,11 @@ type_class_init_Wm (TypeNode   *node,
       i++;
     }
   
+#ifdef __EMSCRIPTEN__
+  node->data->class.init_state = INITIALIZED;
+#else
   g_atomic_int_set (&node->data->class.init_state, INITIALIZED);
+#endif
 }
 
 static void
@@ -2385,7 +2438,15 @@ type_data_last_unref_Wm (TypeNode *node,
     }
   
   /* may have been re-referenced meanwhile */
-  if (g_atomic_int_dec_and_test ((int *) &node->ref_count))
+  bool test = false;
+  #ifdef __EMSCRIPTEN__
+    node->ref_count -= 1; 
+    test = (node->ref_count == 0); 
+  #else
+    test = g_atomic_int_dec_and_test ((int *) &node->ref_count);
+  #endif
+
+  if (test)
     {
       GType ptype = NODE_PARENT_TYPE (node);
       TypeData *tdata;
@@ -2445,6 +2506,7 @@ type_data_unref_U (TypeNode *node,
                    gboolean  uncached)
 {
   guint current;
+  bool test = false;
 
   do {
     current = NODE_REFCOUNT (node);
@@ -2475,7 +2537,20 @@ type_data_unref_U (TypeNode *node,
       // g_rec_mutex_unlock (&class_init_rec_mutex);
       return;
     }
-  } while (!g_atomic_int_compare_and_exchange ((int *) &node->ref_count, current, current - 1));
+#ifdef __EMSCRIPTEN__
+  if (node->ref_count == current) 
+  { 
+    node->ref_count = current-1; 
+    test = TRUE; 
+  } 
+  else test = FALSE;
+#endif
+  } while
+#ifdef __EMSCRIPTEN__
+  (!test);
+#else
+  (!g_atomic_int_compare_and_exchange ((int *) &node->ref_count, current, current - 1));
+#endif
 }
 
 /**
@@ -2933,7 +3008,6 @@ g_type_class_ref (GType type)
   gboolean holds_ref;
   GTypeClass *pclass;
 
-
   /* optimize for common code path */
   node = lookup_type_node_I (type);
   if (!node || !node->is_classed)
@@ -2945,7 +3019,11 @@ g_type_class_ref (GType type)
 
   if (G_LIKELY (type_data_ref_U (node)))
     {
+#ifdef __EMSCRIPTEN__
+      if (G_LIKELY ( node->data->class.init_state == INITIALIZED ))
+#else
       if (G_LIKELY (g_atomic_int_get (&node->data->class.init_state) == INITIALIZED))
+#endif
         return node->data->class.class;
       holds_ref = TRUE;
     }
@@ -3051,8 +3129,13 @@ g_type_class_peek (GType type)
   gpointer class;
   
   node = lookup_type_node_I (type);
+#ifdef __EMSCRIPTEN__
+  if (node && node->is_classed && NODE_REFCOUNT (node) &&
+      node->data->class.init_state == INITIALIZED)
+#else
   if (node && node->is_classed && NODE_REFCOUNT (node) &&
       g_atomic_int_get (&node->data->class.init_state) == INITIALIZED)
+#endif
     /* ref_count _may_ be 0 */
     class = node->data->class.class;
   else
@@ -3081,9 +3164,15 @@ g_type_class_peek_static (GType type)
   gpointer class;
   
   node = lookup_type_node_I (type);
+#ifdef __EMSCRIPTEN__
   if (node && node->is_classed && NODE_REFCOUNT (node) &&
       /* peek only static types: */ node->plugin == NULL &&
       g_atomic_int_get (&node->data->class.init_state) == INITIALIZED)
+#else
+  if (node && node->is_classed && NODE_REFCOUNT (node) &&
+      /* peek only static types: */ node->plugin == NULL &&
+      node->data->class.init_state == INITIALIZED)
+#endif
     /* ref_count _may_ be 0 */
     class = node->data->class.class;
   else
@@ -3870,7 +3959,11 @@ g_type_get_instance_count (GType type)
   node = lookup_type_node_I (type);
   g_return_val_if_fail (node != NULL, 0);
 
+#ifdef __EMSCRIPTEN__
+  return node->instance_count;
+#else
   return g_atomic_int_get (&node->instance_count);
+#endif
 #else
   return 0;
 #endif
