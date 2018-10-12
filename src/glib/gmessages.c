@@ -198,6 +198,7 @@
 #include <glib/gstring.h>
 #include <glib/gpattern.h>
 
+#include <glib/gmacros.h>
 #include <glib/gmessages.h>
 
 #ifdef G_OS_UNIX

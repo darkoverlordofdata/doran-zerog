@@ -3361,8 +3361,10 @@ g_object_unref (gpointer _object)
 	          goto retry_atomic_decrement2;
         }
 
-      if (old_ref == 1)
+      if (old_ref == 1) {
+        G_OBJECT_GET_CLASS (object)->finalize (object);
         g_type_free_instance ((GTypeInstance*) object);
+      }
 
 //   /* here we want to atomically do: if (ref_count>1) { ref_count--; return; } */
 //  retry_atomic_decrement1:

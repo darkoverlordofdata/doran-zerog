@@ -404,6 +404,7 @@ void _g_object_type_init (void);
 void _g_param_spec_types_init (void);
 void _g_signal_init (void);
 
+
 static inline TypeNode*
 lookup_type_node_I (GType utype)
 {
@@ -601,30 +602,66 @@ lookup_iface_entry_I (volatile IFaceEntries *entries,
   if (entries == NULL)
     return NULL;
 
-  G_ATOMIC_ARRAY_DO_TRANSACTION
-    (&iface_node->_prot.offsets, guint8,
+  // expand the G_ATOMIC_ARRAY_DO_TRANSACTION macro:
+	volatile gpointer *_datap = &(&iface_node->_prot.offsets)->data;
+	guint8 *transaction_data; 
+	guint8 *__check; 
+	__check = g_atomic_pointer_get (_datap); 
+	do { 
+		transaction_data = __check; 
 
-     entry = NULL;
-     offsets = transaction_data;
-     offset_index = entries->offset_index;
-     if (offsets != NULL &&
-	 offset_index < G_ATOMIC_ARRAY_DATA_SIZE(offsets))
-       {
-	 index = offsets[offset_index];
-	 if (index > 0)
-	   {
-	     /* zero means unset, subtract one to get real index */
-	     index -= 1;
+    entry = NULL;
+    offsets = transaction_data;
+    offset_index = entries->offset_index;
+    if (offsets != NULL && offset_index < G_ATOMIC_ARRAY_DATA_SIZE(offsets))
+    {
+      index = offsets[offset_index];
+      if (index > 0)
+      {
+        /* zero means unset, subtract one to get real index */
+        index -= 1;
 
-	     if (index < IFACE_ENTRIES_N_ENTRIES (entries))
-	       {
-		 check = (IFaceEntry *)&entries->entry[index];
-		 if (check->iface_type == NODE_TYPE (iface_node))
-		   entry = check;
-	       }
-	   }
-       }
-     );
+        // printf("count of iface = %d\n", IFACE_ENTRIES_N_ENTRIES (entries));
+
+        if (index < IFACE_ENTRIES_N_ENTRIES (entries))
+        {
+          check = (IFaceEntry *)&entries->entry[index];
+          if (check->iface_type == NODE_TYPE (iface_node))
+          {
+            entry = check;
+          } 
+        }
+      }
+    }
+
+		__check = g_atomic_pointer_get (_datap); 
+	} while (transaction_data != __check); 
+
+
+  // G_ATOMIC_ARRAY_DO_TRANSACTION
+  //   (&iface_node->_prot.offsets, guint8,
+
+  //    entry = NULL;
+  //    offsets = transaction_data;
+  //    offset_index = entries->offset_index;
+  //    if (offsets != NULL &&
+	//  offset_index < G_ATOMIC_ARRAY_DATA_SIZE(offsets))
+  //      {
+	//  index = offsets[offset_index];
+	//  if (index > 0)
+	//    {
+	//      /* zero means unset, subtract one to get real index */
+	//      index -= 1;
+
+	//      if (index < IFACE_ENTRIES_N_ENTRIES (entries))
+	//        {
+	// 	 check = (IFaceEntry *)&entries->entry[index];
+	// 	 if (check->iface_type == NODE_TYPE (iface_node))
+	// 	   {entry = check;} 
+	//        }
+	//    }
+  //      }
+  //    );
 
  return entry;
 }
@@ -650,25 +687,50 @@ type_lookup_iface_vtable_I (TypeNode *node,
   gboolean res;
 
   if (!NODE_IS_IFACE (iface_node))
-    {
+  {
       if (vtable_ptr)
-	*vtable_ptr = NULL;
+	      *vtable_ptr = NULL;
       return FALSE;
+  }
+
+  // expand G_ATOMIC_ARRAY_DO_TRANSACTION 
+  
+  volatile gpointer *_datap = &(CLASSED_NODE_IFACES_ENTRIES (node))->data;
+  IFaceEntries *transaction_data;
+  IFaceEntries *__check; 
+  __check = g_atomic_pointer_get (_datap); 
+
+  do { 
+    transaction_data = __check; 
+    entry = lookup_iface_entry_I (transaction_data, iface_node);
+    res = entry != NULL;
+    if (vtable_ptr)
+    {
+      if (entry) {
+        *vtable_ptr = entry->vtable;
+      } else {
+        *vtable_ptr = NULL;
+      }
     }
+    __check = g_atomic_pointer_get (_datap); 
+  } while (transaction_data != __check); 
 
-  G_ATOMIC_ARRAY_DO_TRANSACTION
-    (CLASSED_NODE_IFACES_ENTRIES (node), IFaceEntries,
 
-     entry = lookup_iface_entry_I (transaction_data, iface_node);
-     res = entry != NULL;
-     if (vtable_ptr)
-       {
-	 if (entry)
-	   *vtable_ptr = entry->vtable;
-	 else
-	   *vtable_ptr = NULL;
-       }
-     );
+  // G_ATOMIC_ARRAY_DO_TRANSACTION
+  //   (CLASSED_NODE_IFACES_ENTRIES (node), IFaceEntries,
+
+  //    entry = lookup_iface_entry_I (transaction_data, iface_node);
+  //    res = entry != NULL;
+  //    if (vtable_ptr)
+  //      {
+	//  if (entry) {
+	//    *vtable_ptr = entry->vtable;
+  //  }
+	//  else {
+	//    *vtable_ptr = NULL;
+  //  }
+  //      }
+  //    );
 
   return res;
 }
@@ -2297,9 +2359,7 @@ type_class_init_Wm (TypeNode   *node,
    */
   if (node->data->class.class_init)
   {
-    printf("before class_init 0x%08x\n", node->data->class.class_init);
-    node->data->class.class_init (class), (gpointer) node->data->class.class_data);
-    printf("after class_init\n");
+    node->data->class.class_init (class, (gpointer) node->data->class.class_data);
   }
   // G_WRITE_LOCK (&type_rw_lock);
   
@@ -3563,7 +3623,6 @@ type_node_check_conformities_UorL (TypeNode *node,
   if (/* support_inheritance && */
       NODE_IS_ANCESTOR (iface_node, node))
     return TRUE;
-
   support_interfaces = support_interfaces && node->is_instantiatable && NODE_IS_IFACE (iface_node);
   support_prerequisites = support_prerequisites && NODE_IS_IFACE (node);
   match = FALSE;
@@ -3578,6 +3637,7 @@ type_node_check_conformities_UorL (TypeNode *node,
 	{
 	  if (type_lookup_iface_vtable_I (node, iface_node, NULL))
 	    match = TRUE;
+
 	}
     }
   if (!match &&
@@ -4127,6 +4187,9 @@ g_type_check_instance_is_a (GTypeInstance *type_instance,
   
   node = lookup_type_node_I (type_instance->g_class->g_type);
   iface = lookup_type_node_I (iface_type);
+
+  gboolean bb = NODE_IS_ANCESTOR (iface, node);
+
   check = node && node->is_instantiatable && iface && type_node_conforms_to_U (node, iface, TRUE, FALSE);
   
   return check;
