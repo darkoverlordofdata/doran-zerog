@@ -3356,12 +3356,11 @@ g_object_unref (gpointer _object)
     retry_atomic_decrement2:
       old_ref = g_atomic_int_get ((int *)&object->ref_count);
       if (old_ref > 1)
-        {
-          if (!g_atomic_int_compare_and_exchange ((int *)&object->ref_count, old_ref, old_ref - 1))
-	          goto retry_atomic_decrement2;
-        }
-
-      if (old_ref == 1) {
+      {
+        if (!g_atomic_int_compare_and_exchange ((int *)&object->ref_count, old_ref, old_ref - 1))
+          goto retry_atomic_decrement2;
+      } else {
+      // if (old_ref <= 1) {
         G_OBJECT_GET_CLASS (object)->finalize (object);
         g_type_free_instance ((GTypeInstance*) object);
       }
