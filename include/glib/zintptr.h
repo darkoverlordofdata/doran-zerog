@@ -4,7 +4,9 @@
 #include <glib/gtypes.h>
 
 G_BEGIN_DECLS
-
+/**
+ * Careful with that axe, Eugene.
+ */
 typedef struct ZIntPtr
 {
     gconstpointer m_value;

@@ -12,6 +12,8 @@
                 Replacement Vala runtime
 
 
+"Careful With That Axe, Eugene"
+
 Based on the Gnome's GLib and GObject. Vala uses GLib as it's runtime, but there is much of GLib that it does not use at all. This implementation uses even less. Designed to target environments with no GLib distro, such as WASM and Android.
 
 No threading, no boxing, no closure, no marshalling, no notifications.
@@ -26,6 +28,11 @@ GObject Requires:
         -s EMULATE_FUNCTION_POINTER_CASTS=1
         
 
-So far, inheritence, abstracts and delegates work. Interfaces do not. They don't initialize correctly, it appears the vtable gets overwritten.
+So far, inheritence, abstracts and delegates work. Interfaces do not. They don't initialize correctly.
 
-I could re-write framework code to use abstract instead of interface. I'm not sure that is the right direction - wasm supports real function pointers, and when emscripten supports them also, this entire issue may go away.
+Solution - replace interface with abstract class. GObject's implementation of interface results in a unpromotable recast error, likely due to type puning. 
+
+https://www.cocoawithlove.com/2008/04/using-pointers-to-recast-in-c-is-bad.html :
+
+In this case it's not possible bugs but undefined behavior that is the issue, causing a crash in wasm.
+
