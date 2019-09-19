@@ -73,9 +73,10 @@
   "libraries": null,
   "includes": [
     ".lib/zerog/include",
-    "/usr/include/glib-2.56.2/",
-    "/usr/include/glib-2.56.2/glib/glib",
-    "/usr/include/glib-2.56.2/glib/gobject"
+    "C:/Users/darko/Documents/GitHub/glib/",
+    "C:/Users/darko/Documents/GitHub/glib/glib",
+    "C:/Users/darko/Documents/GitHub/glib/gobject",
+    "C:/msys64/mingw64/lib/libffi-3.2.1/include"
   ],
   "packages": null,
   "options": {},
