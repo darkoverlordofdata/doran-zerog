@@ -10,7 +10,9 @@
   "description": "Compact GLib replacement",
   "license": "MIT",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "glib": "git://github.com/GNOME/glib.git/#glib-2-56"
+  },
   "main": "CMakeLists.txt",
   "source": "src/",
   "files": [

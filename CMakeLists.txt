@@ -6,18 +6,18 @@ cmake_minimum_required ( VERSION 3.1 )
 ###################################################################################
 project ( zerog VERSION 0.0.1 )
 
+# 
+# git clone -b glib-2-56 --single-branch https://github.com/GNOME/glib.git
+
 # Includes: 
 
 list ( APPEND INCLUDE .lib/zerog/include )
-list ( APPEND INCLUDE /home/darkoverlordofdata/Documents/GitHub/glib-2.56.2 )
-list ( APPEND INCLUDE /home/darkoverlordofdata/Documents/GitHub/glib-2.56.2/glib )
-list ( APPEND INCLUDE /home/darkoverlordofdata/Documents/GitHub/glib-2.56.2/gobject )
-# list ( APPEND INCLUDE C:/Users/darko/Documents/GitHub/glib/ )
-# list ( APPEND INCLUDE C:/Users/darko/Documents/GitHub/glib/glib )
-# list ( APPEND INCLUDE C:/Users/darko/Documents/GitHub/glib/gobject )
-# list ( APPEND INCLUDE C:/msys64/mingw64/lib/libffi-3.2.1/include )
+list ( APPEND INCLUDE .lib/glib )
+list ( APPEND INCLUDE .lib/glib/glib )
+list ( APPEND INCLUDE .lib/glib/gobject )
 
-# C Sources: 
+
+\# C Sources: 
 list ( APPEND CSOURCE .lib/zerog/src/zerog.c )
 list ( APPEND CSOURCE .lib/zerog/src/gobject/gbinding.c )
 list ( APPEND CSOURCE .lib/zerog/src/gobject/gatomicarray.c )
