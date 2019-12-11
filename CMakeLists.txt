@@ -17,7 +17,7 @@ list ( APPEND INCLUDE .lib/glib/glib )
 list ( APPEND INCLUDE .lib/glib/gobject )
 
 
-\# C Sources: 
+# C Sources: 
 list ( APPEND CSOURCE .lib/zerog/src/zerog.c )
 list ( APPEND CSOURCE .lib/zerog/src/gobject/gbinding.c )
 list ( APPEND CSOURCE .lib/zerog/src/gobject/gatomicarray.c )
